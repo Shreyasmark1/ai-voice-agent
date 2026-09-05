@@ -1,43 +1,63 @@
-# syntax=docker/dockerfile:1
+# Stage 1: Dependencies Installation Stage
+ARG NODE_VERSION=24.13.0-slim
 
-FROM node:22-alpine AS deps
+FROM node:${NODE_VERSION} AS dependencies
+
 WORKDIR /app
 
-RUN corepack enable
+COPY package.json yarn.lock* package-lock.json* pnpm-lock.yaml* .npmrc* ./
 
-COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
-RUN pnpm install --frozen-lockfile
+RUN --mount=type=cache,target=/root/.npm \
+    --mount=type=cache,target=/usr/local/share/.cache/yarn \
+    --mount=type=cache,target=/root/.local/share/pnpm/store \
+  if [ -f package-lock.json ]; then \
+    npm ci --no-audit --no-fund; \
+  elif [ -f yarn.lock ]; then \
+    corepack enable yarn && yarn install --frozen-lockfile --production=false; \
+  elif [ -f pnpm-lock.yaml ]; then \
+    corepack enable pnpm && pnpm install --frozen-lockfile; \
+  else \
+    echo "No lockfile found." && exit 1; \
+  fi
 
-FROM node:22-alpine AS builder
+# Stage 2: Build Next.js application in standalone mode
+FROM node:${NODE_VERSION} AS builder
+
+WORKDIR /app
+
+COPY --from=dependencies /app/node_modules ./node_modules
+
+COPY . .
+
+ENV NODE_ENV=production
+ENV NEXT_TELEMETRY_DISABLED=1
+
+RUN if [ -f package-lock.json ]; then \
+    npm run build; \
+  elif [ -f yarn.lock ]; then \
+    corepack enable yarn && yarn build; \
+  elif [ -f pnpm-lock.yaml ]; then \
+    corepack enable pnpm && pnpm build; \
+  else \
+    echo "No lockfile found." && exit 1; \
+  fi
+
+# Stage 3: Run Next.js application
+FROM node:${NODE_VERSION} AS runner
+
 WORKDIR /app
 
 ENV NEXT_TELEMETRY_DISABLED=1
 
-RUN corepack enable
+COPY --from=builder --chown=node:node /app/public ./public
 
-COPY --from=deps /app/node_modules ./node_modules
-COPY . .
+RUN mkdir .next
+RUN chown node:node .next
 
-COPY .env* ./
+COPY --from=builder --chown=node:node /app/.next/standalone ./
+COPY --from=builder --chown=node:node /app/.next/static ./.next/static
 
-RUN pnpm build
-
-FROM node:22-alpine AS runner
-WORKDIR /app
-
-ENV NODE_ENV=production \
-    NEXT_TELEMETRY_DISABLED=1 \
-    HOSTNAME=0.0.0.0 \
-    PORT=3000
-
-RUN addgroup --system --gid 1001 nodejs \
-    && adduser --system --uid 1001 nextjs
-
-COPY --from=builder /app/public ./public
-COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
-COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
-
-USER nextjs
+USER node
 
 EXPOSE 3000
 
