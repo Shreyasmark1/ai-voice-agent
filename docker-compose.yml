@@ -1,0 +1,44 @@
+services:
+  voice-agent:
+    build:
+      context: ./voice-agent
+    container_name: voice-agent
+    restart: unless-stopped
+    # Prefer env vars from the process/environment (works in CI/CD).
+    # Optional local .env files are also read if present (compose auto-loads .env).
+    environment:
+      - PORT=${VOICE_AGENT_PORT:-8765}
+      - NEXTJS_URL=${NEXTJS_URL:-http://localhost:3000}
+      - LLM_API_KEY=${LLM_API_KEY:?LLM_API_KEY must be set in the environment}
+      - LLM_API_ENDPOINT=${LLM_API_ENDPOINT:-https://openrouter.ai/api/v1}
+      - LLM_MODEL=${LLM_MODEL:-poolside/laguna-xs-2.1:free}
+      - SARVAM_API_KEY=${SARVAM_API_KEY:-}
+      - TTS_PROVIDER=${TTS_PROVIDER:-sarvam}
+      - TTS_MODEL=${TTS_MODEL:-bulbul:v3}
+      - STT_PROVIDER=${STT_PROVIDER:-sarvam}
+      - STT_MODEL=${STT_MODEL:-openai/whisper-large-v3}
+      - VOICE_AGENT_SECRET=${VOICE_AGENT_SECRET}
+    ports:
+      - "${VOICE_AGENT_PORT:-8765}:8765"
+
+  web-ui:
+    build:
+      context: ./web-ui
+    container_name: web-ui
+    restart: unless-stopped
+    environment:
+      - NEXTAUTH_SECRET=${NEXTAUTH_SECRET:?NEXTAUTH_SECRET must be set in the environment}
+      - NEXTAUTH_URL=${NEXTAUTH_URL:-http://localhost:3000}
+      - DATABASE_URL=${DATABASE_URL:?DATABASE_URL must be set in the environment}
+      - LLM_API_KEY=${LLM_API_KEY:-}
+      - LLM_API_ENDPOINT=${LLM_API_ENDPOINT:-https://openrouter.ai/api/v1}
+      - LLM_MODEL=${LLM_MODEL:-poolside/laguna-xs-2.1:free}
+      - VOICE_AGENT_SECRET=${VOICE_AGENT_SECRET}
+      - VOICE_AGENT_URL=${VOICE_AGENT_URL:-ws://voice-agent:8765}
+      - GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID:-}
+      - GOOGLE_CLIENT_SECRET=${GOOGLE_CLIENT_SECRET:-}
+      - GOOGLE_CALENDAR_ENCRYPTION_KEY=${GOOGLE_CALENDAR_ENCRYPTION_KEY:-}
+    ports:
+      - "${WEB_UI_PORT:-3000}:3000"
+    depends_on:
+      - voice-agent

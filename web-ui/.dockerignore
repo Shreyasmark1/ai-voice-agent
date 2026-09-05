@@ -1,0 +1,16 @@
+.git/
+.gitignore
+.github/
+.vercel/
+.husky/
+*.md
+.idea/
+.vscode/
+node_modules/
+.next/
+out/
+build/
+coverage/
+drizzle/
+*.tsbuildinfo
+next-env.d.ts
