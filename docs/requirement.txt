@@ -1,0 +1,271 @@
+Voice AI Personal Assistant 
+
+
+Deadline: 72 Hours
+Format: Responsive web application (mobile-first)
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+
+1. Objective
+
+
+Build a working web application where any small-business owner can create an automated workflow for handling missed calls and customer follow-ups.
+
+
+The application should not be limited to one industry. A cake shop, delivery business, clinic, real-estate agency, repair service, or other small business should be able to configure what happens when a customer’s call is missed.
+
+
+
+
+2. Product Concept
+
+
+The product should work like a simple personal assistant on call
+
+
+A business owner should be able to:
+
+
+• Create a business profile
+• Select or create a missed-call use case
+• Define what information should be collected
+• Configure the Voice AI assistant’s behaviour
+• Select what should happen after information is collected
+• Test the workflow using a simulator
+• View customer conversations, captured details, and follow-up status
+
+
+The application should be generic enough to support multiple business types without rewriting the core code.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+
+3. Example Use Cases
+
+
+A. Cake Shop
+
+
+When a customer’s call is missed:
+
+
+• The AI asks whether the customer wants to order a cake or has a general enquiry
+• It collects the cake type, flavour, weight, required date, custom message, delivery or pickup preference, and budget
+• It creates an order enquiry
+• The shop owner receives a structured summary
+
+
+B. Delivery or Logistics Business
+
+
+When a customer’s call is missed:
+
+
+• The AI calls back and asks whether the customer wants a new delivery, a status update, or help with an existing delivery
+• For a new delivery, it collects pickup location, delivery location, package type, preferred time, and contact details
+• For an existing delivery, it collects or validates an order/tracking number
+• It creates a delivery request or callback task
+
+
+C. Clinic or Doctor
+
+
+When a patient’s call is missed:
+
+
+• The AI calls back and asks whether the patient wants to book, reschedule, cancel, or enquire about an appointment
+• It collects the patient’s name, preferred doctor or speciality, date, and time
+• It creates an appointment request
+• It avoids giving medical advice
+
+
+D. Real-Estate Business
+
+
+When a lead’s call is missed:
+
+
+• The AI asks whether the caller wants to buy, rent, sell, or schedule a site visit
+• It collects property type, preferred location, budget, timeline, and visit preference
+• It creates a qualified lead and callback request
+
+
+E. Home or Repair Service
+
+
+When a customer’s call is missed:
+
+
+• The AI collects the service type, issue description, address, urgency, and preferred visit time
+• It creates a service request
+• It flags urgent requests for priority follow-up
+
+
+Candidates must implement at least two complete use cases. 
+This should be demoed as an ai voice assistant over a loom or any equivalent screen recorder and shared with us
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+C. Custom Workflow Builder
+
+
+Allow the user to create or modify a workflow.
+
+
+At minimum, the user should be able to configure:
+
+
+• Workflow name
+• Trigger: missed call
+• Greeting or opening message
+• Questions or data fields to collect
+• Required versus optional fields
+• One or more simple conditional branches
+• Action after collection
+• Closing message
+• Owner notification or follow-up status
+
+
+Example condition:
+
+
+If the cake is required within 24 hours → mark the enquiry as urgent.
+Otherwise → create a normal order enquiry.
+
+
+A drag-and-drop builder is not required. A well-designed form or step-by-step builder is sufficient.
+
+
+D. AI Conversation Experience
+
+
+Provide a working text-based or voice-based AI conversation.
+
+
+E. AI Tool Calling & Google Calendar Integration
+The AI voice assistant should support tool calling so that the agent can perform actions using external services when required.
+At least one real external tool integration is mandatory.
+The candidate must integrate Google Calendar as an agent tool.
+The AI agent should be able to:
+• Check calendar availability
+• Create a calendar event
+• Update/reschedule a calendar event
+• Cancel/delete a calendar event
+The AI should decide when the Google Calendar tool needs to be called based on the conversation and workflow configuration.
+For example:
+Customer:
+“I want to schedule a callback tomorrow at 4 PM.”
+The agent should:
+1. Understand the customer's request.
+2. Identify the required date and time.
+3. Check availability using the Google Calendar tool.
+4. If the time is available, ask for confirmation if required.
+5. Create the calendar event after confirmation.
+6. Use the tool response to continue the conversation.
+7. Provide the final confirmation to the customer through the voice assistant.
+
+Bonus: External API Tool Calling
+As a bonus, the candidate can create an additional agent tool that calls any external API during the conversation.
+Examples:
+• CRM API
+• Delivery tracking API
+• Order management API
+• Customer lookup API
+• Payment/status API
+• Any other relevant third-party REST API
+The AI should be able to decide when the API tool is required, pass the required parameters dynamically, receive the API response, and continue the conversation based on the returned data.
+The API integration should be implemented as a proper agent tool/function and should not be hardcoded directly inside the AI prompt.
+
+
+
+
+G. Dashboard and Customer Records
+
+
+Create a dashboard showing:
+
+
+• Caller name and phone number
+• Business and workflow used
+• Date and time
+• Conversation status
+• Customer intent
+• Information collected
+• AI-generated summary
+• Action performed
+• Urgency or priority
+• Follow-up status
+• Transcript
+
+
+Allow the business owner to mark an item as contacted, completed, or closed.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+
+5. Language Requirement
+
+
+Support:
+
+
+• English
+• Hindi or one other Indian language of your choice
+
+
+The conversation should work in the selected language.
+
+
+Bonus points for:
+
+
+• Automatic language detection
+• Natural switching between supported languages
+
+
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+
+6. Suggested Technical Stack
+
+
+Candidates may choose any suitable stack.
+
+
+Suggested options:
+
+
+• Frontend: Next.js, React, Vue, Svelte, or another modern web framework
+• Backend: Node.js, Python, or serverless functions
+• Database: Supabase, PostgreSQL, Firebase, or equivalent
+• AI: OpenAI, Gemini, Claude, or another suitable model
+• Voice: Pipecat, Deepgram, Sarvam AI, ElevenLabs No browser speech APIs
+• Hosting: Vercel, Render, Railway, Cloudflare, or equivalent
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+
+10. Submission Requirements
+
+
+Submit:
+
+
+• GitHub repository
+• Deployed web application
+• README with setup instructions
+• Architecture diagram
+• Database schema or workflow data model
+• Environment-variable template without secrets
+• Short Loom or similar video walkthrough, ideally 5–8 minutes
+• A short note listing:
+  – What is fully working
+  – What is simulated or mocked
+  – What you would build next for production
