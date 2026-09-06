@@ -6,9 +6,6 @@
 *.md
 .idea/
 .vscode/
-# Env files carry secrets; inject via the platform/runtime environment instead
-.env
-.env.*
 node_modules/
 .next/
 out/
