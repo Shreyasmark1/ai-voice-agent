@@ -1,0 +1,31 @@
+# git / tooling
+.git/
+.gitignore
+.github/
+.idea/
+.vscode/
+*.md
+
+# env files carry secrets; inject via the container environment instead
+**/.env
+**/.env.*
+**/.envrc
+
+# web-ui (Next.js)
+web-ui/node_modules
+web-ui/.next
+web-ui/out
+web-ui/build
+web-ui/coverage
+web-ui/.vercel
+web-ui/*.tsbuildinfo
+
+# voice-agent (Python)
+voice-agent/.venv
+voice-agent/venv
+voice-agent/**/__pycache__
+voice-agent/**/*.py[cod]
+voice-agent/*.egg-info
+voice-agent/dist
+voice-agent/.pytest_cache
+voice-agent/.mypy_cache
