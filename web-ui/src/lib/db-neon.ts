@@ -1,7 +1,4 @@
 import * as dns from "node:dns";
-import { existsSync } from "node:fs";
-import { resolve } from "node:path";
-import { config as loadEnv } from "dotenv";
 import type { ConnectionConfig } from "pg";
 
 // Resolves Neon hostnames to IPv4 (avoids hanging on unreachable IPv6 AAAA
@@ -30,14 +27,4 @@ export async function buildPgConfig(url: string): Promise<ConnectionConfig> {
   }
 
   return connectionConfig;
-}
-
-export function loadDatabaseUrl(): string | undefined {
-  if (process.env.DATABASE_URL) return process.env.DATABASE_URL;
-
-  const envPath = resolve(process.cwd(), ".env.local");
-  if (existsSync(envPath)) {
-    loadEnv({ path: envPath });
-  }
-  return process.env.DATABASE_URL;
 }
