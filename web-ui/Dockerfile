@@ -10,11 +10,11 @@ COPY web-ui/package.json web-ui/package-lock.json web-ui/pnpm-lock.yaml web-ui/p
 RUN --mount=type=cache,target=/root/.npm \
     --mount=type=cache,target=/usr/local/share/.cache/yarn \
     --mount=type=cache,target=/root/.local/share/pnpm/store \
-  if [ -f package-lock.json ]; then \
+  if [ -f web-ui/package-lock.json ]; then \
     npm ci --no-audit --no-fund; \
-  elif [ -f yarn.lock ]; then \
+  elif [ -f web-ui/yarn.lock ]; then \
     corepack enable yarn && yarn install --frozen-lockfile --production=false; \
-  elif [ -f pnpm-lock.yaml ]; then \
+  elif [ -f web-ui/pnpm-lock.yaml ]; then \
     corepack enable pnpm && pnpm install --frozen-lockfile; \
   else \
     echo "No lockfile found." && exit 1; \
