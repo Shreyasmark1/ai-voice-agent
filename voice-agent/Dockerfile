@@ -1,5 +1,4 @@
 # syntax=docker/dockerfile:1
-
 FROM ghcr.io/astral-sh/uv:python3.11-bookworm-slim
 
 ENV UV_COMPILE_BYTECODE=1 \
@@ -9,16 +8,14 @@ ENV UV_COMPILE_BYTECODE=1 \
 
 WORKDIR /app
 
-COPY pyproject.toml uv.lock ./
+COPY voice-agent/pyproject.toml voice-agent/uv.lock ./
 RUN --mount=type=cache,target=/root/.cache/uv \
     uv sync --frozen --no-dev --no-install-project
 
-COPY src/ ./src/
+COPY voice-agent/src/ ./src/
 
 RUN --mount=type=cache,target=/root/.cache/uv \
     uv sync --frozen --no-dev
-
-COPY .env* ./
 
 EXPOSE 8765
 

@@ -1,7 +1,8 @@
 services:
   voice-agent:
     build:
-      context: ./voice-agent
+      context: .
+      dockerfile: voice-agent/Dockerfile
     container_name: voice-agent
     restart: unless-stopped
     # Prefer env vars from the process/environment (works in CI/CD).
@@ -23,7 +24,8 @@ services:
 
   web-ui:
     build:
-      context: ./web-ui
+      context: .
+      dockerfile: web-ui/Dockerfile
     container_name: web-ui
     restart: unless-stopped
     environment:

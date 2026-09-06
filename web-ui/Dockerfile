@@ -5,7 +5,7 @@ FROM node:${NODE_VERSION} AS dependencies
 
 WORKDIR /app
 
-COPY package.json yarn.lock* package-lock.json* pnpm-lock.yaml* .npmrc* ./
+COPY web-ui/package.json web-ui/package-lock.json web-ui/pnpm-lock.yaml web-ui/pnpm-workspace.yaml ./
 
 RUN --mount=type=cache,target=/root/.npm \
     --mount=type=cache,target=/usr/local/share/.cache/yarn \
@@ -21,13 +21,13 @@ RUN --mount=type=cache,target=/root/.npm \
   fi
 
 # Stage 2: Build Next.js application in standalone mode
-FROM node:${NODE_VERSION} AS builder
+  FROM node:${NODE_VERSION} AS builder
 
 WORKDIR /app
 
 COPY --from=dependencies /app/node_modules ./node_modules
 
-COPY . .
+COPY web-ui/ ./
 
 ENV NODE_ENV=production
 ENV NEXT_TELEMETRY_DISABLED=1
@@ -43,7 +43,7 @@ RUN if [ -f package-lock.json ]; then \
   fi
 
 # Stage 3: Run Next.js application
-FROM node:${NODE_VERSION} AS runner
+  FROM node:${NODE_VERSION} AS runner
 
 WORKDIR /app
 
