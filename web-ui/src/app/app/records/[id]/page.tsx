@@ -3,6 +3,7 @@ import Link from "next/link";
 
 import { getConversation } from "@/lib/actions/conversation";
 import { FollowUpStatusButton } from "@/components/follow-up-status-button";
+import { urgencyTextClass } from "@/lib/urgency";
 import { buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import {
@@ -72,7 +73,7 @@ export default async function RecordDetailPage({
             <div><span className="text-muted-foreground">Intent:</span> {conv.intent}</div>
             <div>
               <span className="text-muted-foreground">Urgency:</span>{" "}
-              <span className={conv.urgency === "urgent" ? "font-medium text-red-600" : ""}>
+              <span className={urgencyTextClass(conv.urgency)}>
                 {conv.urgency}
               </span>
             </div>

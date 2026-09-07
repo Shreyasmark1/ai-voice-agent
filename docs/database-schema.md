@@ -187,7 +187,7 @@ One row per handled call. Primary dashboard/records entity.
 | `collected_data` | jsonb `Record<string, unknown>` | all workflow field keys → extracted values |
 | `summary` | text | one-sentence summary |
 | `action_after_collection` | varchar(100) | LLM-evaluated 1-3 word action the business should perform after the call (e.g. "Call back") |
-| `urgency` | varchar(20) | `normal` \| `urgent` |
+| `urgency` | varchar(20) | `low` \| `normal` \| `moderate` \| `urgent` |
 | `follow_up_status` | varchar(40) | default `pending`; toggled on the record page |
 | `transcript` | jsonb `ConversationTranscriptEntry[]` | `{role: "assistant"\|"customer", content}` |
 | `created_at` / `updated_at` | timestamp | |
@@ -215,26 +215,33 @@ type ConditionOperator =
 A workflow carries a list of conditions (`workflows.conditions`, jsonb):
 
 ```ts
+type Urgency = "low" | "normal" | "moderate" | "urgent";
+
 type WorkflowCondition = {
   id: string;                 // uuid
   fieldKey: string;           // must match a workflow field key
   operator: ConditionOperator;
   value: string;              // e.g. "1" for within_days, or an option label
-  outcome: "mark_urgent";
+  urgency: Urgency;           // level to set when the condition matches
 };
 ```
 
 - Conditions are rendered into the system prompt under "URGENCY RULES" so the
-  agent knows which calls are urgent while talking.
-- After the call, urgency is determined **twice**:
+  agent knows a call's severity while talking (`low` / `normal` / `moderate` /
+  `urgent`).
+- After the call, urgency is determined **twice** and the higher level wins:
   1. `extractConversationMeta` (LLM) evaluates the rules against
-     `collectedData` (`web-ui/src/lib/agent/persistence.ts`);
-  2. fallback `isUrgent()` (`web-ui/src/lib/simulator/engine.ts`) applies the
-     same rules deterministically (numeric comparisons and `within_days` use
-     calendar math; `within_days` counts from today up to N days out).
-- Result stored as `conversations.urgency = "urgent" | "normal"`.
+     `collectedData` relative to the current time and picks the highest
+     matched level
+     (`web-ui/src/lib/agent/persistence.ts`);
+  2. deterministic fallback `deriveUrgency()` (`web-ui/src/lib/simulator/engine.ts`)
+     applies the same rules over the extracted values and returns the highest
+     matched level (numeric comparisons and `within_days` use calendar math;
+     `within_days` counts from today up to N days out).
+- The saved value uses `maxSeverity(LLM pick, deterministic pick)`,
+  stored as `conversations.urgency`.
 
-Example (Cake Shop template): `required_date within_days 1 ⇒ mark_urgent`.
+Example (Cake Shop template): `required_date within_days 1 ⇒ urgency "urgent"`.
 
 ## 5. Workflow data model (how a workflow drives the agent)
 
@@ -264,7 +271,7 @@ workflow (greeting, closing, language)
 3. `finalizeAgentConversationAction`:
    - convert transcript to `ConversationTranscriptEntry[]`;
    - `extractConversationMeta` LLM-extracts `collectedData / intent /
-     summary / callerName / callerPhone / isUrgent / actionAfterCollection`;
+     summary / callerName / callerPhone / urgency / actionAfterCollection`;
    - `insertConversationRecord` upserts the row `status="completed"`,
      `urgency`, `action_after_collection`,
      `follow_up_status="pending"`.

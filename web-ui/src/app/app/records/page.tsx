@@ -1,6 +1,7 @@
 import Link from "next/link";
 
 import { getConversations } from "@/lib/actions/conversation";
+import { urgencyBadge } from "@/lib/urgency";
 import {
   Card,
   CardContent,
@@ -61,7 +62,9 @@ export default async function RecordsPage() {
               </tr>
             </thead>
             <tbody className="divide-y divide-border">
-              {records.map((r) => (
+              {records.map((r) => {
+                const badge = urgencyBadge(r.conversation.urgency);
+                return (
                 <tr
                   key={r.conversation.id}
                   className="hover:bg-muted/40"
@@ -87,15 +90,7 @@ export default async function RecordsPage() {
                   </td>
                   <td className="px-4 py-3">{r.conversation.intent}</td>
                   <td className="px-4 py-3">
-                    <span
-                      className={
-                        r.conversation.urgency === "urgent"
-                          ? "rounded-full bg-red-500/10 px-2 py-0.5 text-xs font-medium text-red-600"
-                          : "rounded-full bg-muted px-2 py-0.5 text-xs text-muted-foreground"
-                      }
-                    >
-                      {r.conversation.urgency}
-                    </span>
+                    <span className={badge.className}>{badge.label}</span>
                   </td>
                   <td className="px-4 py-3">
                     <span
@@ -114,7 +109,8 @@ export default async function RecordsPage() {
                     )}
                   </td>
                 </tr>
-              ))}
+              );
+              })}
             </tbody>
           </table>
         </div>

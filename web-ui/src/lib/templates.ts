@@ -36,7 +36,7 @@ function condition(
     fieldKey,
     operator,
     value,
-    outcome: "mark_urgent",
+    urgency: "urgent",
   };
 }
 

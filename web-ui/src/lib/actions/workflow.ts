@@ -12,6 +12,7 @@ import { auth } from "@/auth";
 import {
   CONDITION_OPERATORS,
   FIELD_TYPES,
+  URGENCY_VALUES,
   WORKFLOW_LANGUAGES,
 } from "@/lib/constants";
 import { getTemplate } from "@/lib/templates";
@@ -21,7 +22,7 @@ const workflowConditionSchema = z.object({
   fieldKey: z.string().min(1, "Field is required"),
   operator: z.enum(CONDITION_OPERATORS.map((o) => o.value) as [string, ...string[]]),
   value: z.string().min(1, "Value is required"),
-  outcome: z.literal("mark_urgent"),
+  urgency: z.enum(URGENCY_VALUES),
 });
 
 const workflowFieldSchema = z.object({

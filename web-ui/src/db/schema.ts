@@ -29,12 +29,14 @@ export type ConditionOperator =
   | "lte"
   | "within_days";
 
+export type Urgency = "low" | "normal" | "moderate" | "urgent";
+
 export type WorkflowCondition = {
   id: string;
   fieldKey: string;
   operator: ConditionOperator;
   value: string;
-  outcome: "mark_urgent";
+  urgency: Urgency;
 };
 
 export const users = pgTable("users", {

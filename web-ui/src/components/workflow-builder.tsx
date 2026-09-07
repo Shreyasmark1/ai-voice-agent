@@ -9,6 +9,7 @@ import {
 import {
   CONDITION_OPERATORS,
   FIELD_TYPES,
+  URGENCY_LEVELS,
   WORKFLOW_LANGUAGES,
 } from "@/lib/constants";
 import type { WorkflowCondition, WorkflowFieldType } from "@/db/schema";
@@ -169,7 +170,7 @@ export function WorkflowBuilder({
         fieldKey: fields[0]?.key ?? "",
         operator: "eq",
         value: "",
-        outcome: "mark_urgent",
+        urgency: "urgent",
       },
     ]);
   }
@@ -478,7 +479,7 @@ export function WorkflowBuilder({
           {conditions.length === 0 && (
             <p className="text-sm text-muted-foreground">
               No conditions. Conversations will be marked normal priority. Add a
-              condition to flag urgent conversations.
+              condition to set a conversation&apos;s urgency level.
             </p>
           )}
           {conditions.map((condition, index) => (
@@ -553,11 +554,32 @@ export function WorkflowBuilder({
                   />
                 </div>
               </div>
-              <p className="text-sm text-muted-foreground">
-                → Mark conversation as{" "}
-                <span className="font-medium text-destructive">urgent</span>
-              </p>
-            </div>
+              <div className="space-y-2 sm:col-span-2">
+            <Label>Urgency</Label>
+            <select
+              value={condition.urgency}
+              onChange={(e) =>
+                onChangeCondition(index, {
+                  urgency: e.target.value as WorkflowCondition["urgency"],
+                })
+              }
+              className="h-10 w-full rounded-xl border border-input bg-input/30 px-3 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring/50"
+            >
+              {URGENCY_LEVELS.map((u) => (
+                <option key={u.value} value={u.value}>
+                  {u.label}
+                </option>
+              ))}
+            </select>
+          </div>
+          <p className="text-sm text-muted-foreground sm:col-span-2">
+            → When this matches, mark the conversation as{" "}
+            <span className="font-medium">
+              {URGENCY_LEVELS.find((u) => u.value === condition.urgency)
+                ?.label ?? "urgent"}
+            </span>
+          </p>
+        </div>
           ))}
         </div>
       </section>

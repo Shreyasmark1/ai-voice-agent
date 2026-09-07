@@ -1,7 +1,21 @@
 import type {
+  Urgency,
   Workflow,
   WorkflowCondition,
 } from "@/db/schema";
+
+export const URGENCY_SEVERITY: Record<Urgency, number> = {
+  low: 0,
+  normal: 1,
+  moderate: 2,
+  urgent: 3,
+};
+
+export function maxSeverity(a: Urgency | null | undefined, b: Urgency | null | undefined): Urgency {
+  const sa = a ? URGENCY_SEVERITY[a] : 0;
+  const sb = b ? URGENCY_SEVERITY[b] : 0;
+  return sa >= sb ? (a ?? "normal") : (b ?? "normal");
+}
 
 function normalizeText(value: string): string {
   return value
@@ -71,11 +85,15 @@ function evaluateCondition(
   }
 }
 
-export function isUrgent(
+export function deriveUrgency(
   conditions: WorkflowCondition[],
   collected: Record<string, unknown>
-) {
-  return conditions.some((c) => evaluateCondition(c, collected));
+): Urgency {
+  return conditions.reduce<Urgency>((highest, c) => {
+    if (!evaluateCondition(c, collected)) return highest;
+    const level = c.urgency ?? "urgent";
+    return URGENCY_SEVERITY[level] > URGENCY_SEVERITY[highest] ? level : highest;
+  }, "normal");
 }
 
 export function deriveSummary(

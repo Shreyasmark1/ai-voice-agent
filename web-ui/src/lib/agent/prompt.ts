@@ -73,7 +73,8 @@ You are ONLY a spoken-voice assistant for this one call. Do not answer questions
 
 function formatCondition(c: WorkflowCondition): string {
   const op = CONDITION_OPERATOR_TEXT[c.operator] ?? c.operator;
-  return `- If collected field "${c.fieldKey}" ${op} "${c.value}", treat the call as URGENT${c.outcome === "mark_urgent" ? " and mark it urgent" : ""}.`;
+  const urgency = c.urgency ?? "urgent";
+  return `- If collected field "${c.fieldKey}" ${op} "${c.value}", treat the call as ${urgency.toUpperCase()} and record urgency "${urgency}".`;
 }
 
 const CONDITION_OPERATOR_TEXT: Record<string, string> = {

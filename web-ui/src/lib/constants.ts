@@ -52,3 +52,17 @@ export const WORKFLOW_LANGUAGES = [
   { value: "english", label: "English" },
   { value: "hindi", label: "Hindi" },
 ] as const;
+
+export const URGENCY_LEVELS = [
+  { value: "low", label: "Low" },
+  { value: "normal", label: "Normal" },
+  { value: "moderate", label: "Moderate" },
+  { value: "urgent", label: "Urgent" },
+] as const;
+
+export const URGENCY_VALUES = URGENCY_LEVELS.map((u) => u.value) as [
+  "low",
+  "normal",
+  "moderate",
+  "urgent",
+];

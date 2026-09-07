@@ -3,6 +3,7 @@ import Link from "next/link";
 import { getBusinesses } from "@/lib/actions/business";
 import { getWorkflows } from "@/lib/actions/workflow";
 import { getConversations } from "@/lib/actions/conversation";
+import { urgencyBadge } from "@/lib/urgency";
 import {
   Card,
   CardContent,
@@ -140,9 +141,14 @@ export default async function DashboardPage() {
                       </p>
                     </div>
                     <div className="flex shrink-0 items-center gap-2">
-                      {r.conversation.urgency === "urgent" && (
-                        <span className="rounded-full bg-red-500/10 px-2 py-0.5 text-xs font-medium text-red-600">
-                          urgent
+                      {(r.conversation.urgency === "urgent" ||
+                        r.conversation.urgency === "moderate") && (
+                        <span
+                          className={
+                            urgencyBadge(r.conversation.urgency).className
+                          }
+                        >
+                          {urgencyBadge(r.conversation.urgency).label}
                         </span>
                       )}
                       <span className="text-xs text-muted-foreground">

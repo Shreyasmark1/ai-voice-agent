@@ -11,8 +11,10 @@ import { db } from "@/db";
 import { conversations } from "@/db/schema";
 import {
   deriveSummary,
-  isUrgent,
+  deriveUrgency,
+  maxSeverity,
 } from "@/lib/simulator/engine";
+import { URGENCY_VALUES } from "@/lib/constants";
 import { getModel } from "@/lib/agent/model";
 
 export function toTranscript(messages: UIMessage[]): ConversationTranscriptEntry[] {
@@ -37,7 +39,7 @@ const extractionSchema = z.object({
   summary: z.string().nullable(),
   callerName: z.string().nullable(),
   callerPhone: z.string().nullable(),
-  isUrgent: z.boolean(),
+  urgency: z.enum(URGENCY_VALUES).nullable(),
   actionAfterCollection: z.string().max(100).nullable(),
 });
 
@@ -60,7 +62,14 @@ export async function extractConversationMeta(
     .join("\n");
 
   const urgencyFields = (workflow.conditions ?? [])
-    .map((c) => `"${c.fieldKey}" ${CONDITION_OPERATOR_WORDS[c.operator] ?? c.operator} "${c.value}"`)
+    .map((c) => {
+      const op = CONDITION_OPERATOR_WORDS[c.operator] ?? c.operator;
+      const suffix =
+        c.operator === "within_days"
+          ? ` day(s) from the current time`
+          : "";
+      return `- If collected field "${c.fieldKey}" ${op} "${c.value}"${suffix} → urgency "${c.urgency ?? "urgent"}"`;
+    })
     .join("\n");
 
   const now = new Date().toISOString();
@@ -79,17 +88,17 @@ Extract and return JSON with ONLY these keys:
   "summary": "one sentence summarizing the request and key details booked/agreed, or null",
   "callerName": "the customer's name mentioned in the call, or null",
   "callerPhone": "the customer's phone number if mentioned (digits only), or null",
-  "isUrgent": true or false based on the urgency rules below,
+  "urgency": "one of low / normal / moderate / urgent — the HIGHEST level among the matched urgency rules below, or 'normal' if none match or unclear",
   "actionAfterCollection": "a 1-3 word action the business should perform after this call, e.g. 'Call back', 'Prepare order', 'Book appointment', 'Send invoice'. Concise, imperative. null only if no clear action."
 }
 
 Fields to extract into collectedData (use these exact keys, include them ALL even when null):
 ${fieldLines || "(none — only infer contextual keys)"}
 
-URGENCY RULES — evaluate these against the extracted collectedData:
+URGENCY RULES — evaluate these against the extracted collectedData, relative to the current time above:
 ${urgencyFields || "(none)"}
 
-Return "isUrgent": true if ANY urgency rule is satisfied based on what the customer said. Consider natural language expressions (e.g. "2 hours", "right now", "today", "ASAP") as satisfying time-based conditions. Return false if no rule matches or there are no rules.
+Return "urgency" as the HIGHEST level among all rules that are satisfied. Consider natural language expressions (e.g. "2 hours", "right now", "today", "ASAP", "tomorrow") as satisfying time-based conditions. Return "normal" if no rule matches or there are no rules. Use null only if you cannot tell.
 
 Respond with JSON only, no markdown.`;
 
@@ -106,7 +115,7 @@ Respond with JSON only, no markdown.`;
       summary: null,
       callerName: null,
       callerPhone: null,
-      isUrgent: false,
+      urgency: null,
       actionAfterCollection: null,
     };
   }
@@ -154,7 +163,10 @@ export async function insertConversationRecord(input: {
   conversationId?: string | null;
 }) {
   const { workflow, transcript, meta, conversationId } = input;
-  const urgency = meta.isUrgent ?? isUrgent(workflow.conditions ?? [], meta.collectedData);
+  const urgency = maxSeverity(
+    meta.urgency,
+    deriveUrgency(workflow.conditions ?? [], meta.collectedData)
+  );
   const callerName =
     input.callerName?.trim() || meta.callerName?.trim() || null;
   const callerPhone =
@@ -173,7 +185,7 @@ export async function insertConversationRecord(input: {
     collectedData: meta.collectedData,
     summary: summaryText,
     actionAfterCollection: meta.actionAfterCollection,
-    urgency: urgency ? "urgent" : "normal",
+    urgency,
     followUpStatus: "pending",
     transcript,
     updatedAt: new Date(),
