@@ -15,7 +15,7 @@ The product consists of two cooperating applications in this repository:
 - **Workflow builder** — create workflows from 5 industry templates (Cake Shop, Delivery/Logistics, Clinic/Doctor, Real Estate, Home/Repair) or build custom ones; fields (text, phone, number, date, time, choice, textarea) and **urgency conditions** that flag a record as urgent.
 - **Two simulators** — a text **Chat Agent** and a real-time **Voice Agent** you can run in the browser to test a workflow end-to-end.
 - **Google Calendar integration** — business owners connect their Google Calendar; the agent can check availability, book, reschedule, and cancel events after the caller confirms a time (encrypted refresh tokens at rest).
-- **Record keeping** — every simulated/real call is saved as a conversation record with transcript, extracted fields, intent, summary, action performed, and urgency for the dashboard.
+- **Record keeping** — every call is saved as a conversation record with transcript, extracted fields, intent, summary, the AI-determined action to take after the call, and urgency for the dashboard.
 - **Bilingual** — English and Hindi workflows.
 - **LLM-agnostic** — every model call (chat agent, voice agent, transcript extraction) uses any OpenAI-compatible endpoint (`LLM_API_KEY` / `LLM_API_ENDPOINT` / `LLM_MODEL`), tested with OpenRouter.
 
@@ -97,19 +97,32 @@ Env vars (`voice-agent/.env.example`):
 
 ## Deployment
 
-Single-domain deployment (TODO: current in-progress manual deploy of
-`web-ui` + `voice-agent` behind one domain).
+Full instructions live in [`docs/deployment.md`](docs/deployment.md) —
+Dokploy setup for both apps, environment wiring, WebSocket domain config, and
+the local `docker compose` option.
 
-- `web-ui` → `pnpm build && pnpm start` (or deploy the Next.js app on Vercel).
-- `voice-agent` → `uv run voice-agent` behind a WebSocket-capable reverse proxy
-  (the WS path is `/ws`); set `VOICE_AGENT_URL` in the web app to the wss URL.
+Quick guidance:
+
+- Deploy the two apps separately from this one repo: `web-ui` (Next.js) and
+  `voice-agent` (Python/uv).
+- For Next.js, prefer an auto-build platform (Dokploy Nixpacks or Railway
+  Railpack) over a hand-written Dockerfile when available. A
+  [`web-ui/Dockerfile`](web-ui/Dockerfile) exists for platforms that need one.
+- The voice agent uses [`voice-agent/Dockerfile`](voice-agent/Dockerfile)
+  (uv-based, port 8765, WebSocket path `/ws`).
+- Set `VOICE_AGENT_URL` in the web app to the voice agent's public wss URL, and
+  `NEXTJS_URL` in the voice agent to the web app's public https URL.
 
 ## Documentation
 
-See `docs/architecture.md` for the system architecture, the WebSocket call
-lifecycle, the token-authenticated server-to-server bridge, and the protobuf
-frame protocol. See `docs/database-schema.md` for the relational schema and the
-workflow/conversation data model.
+- [`docs/architecture.md`](docs/architecture.md) — system architecture, WebSocket
+  call lifecycle, token-authenticated server-to-server bridge, and the protobuf
+  frame protocol.
+- [`docs/database-schema.md`](docs/database-schema.md) — relational schema and
+  the workflow/conversation data model.
+- [`docs/deployment.md`](docs/deployment.md) — deploying both apps (Dokploy /
+  Nixpacks / Railpack, `docker compose`, env wiring, WebSocket domains).
+- [`docs/requirement.txt`](docs/requirement.txt) — product requirements.
 
 ## Roadmap
 

@@ -141,7 +141,6 @@ export async function startConversationAction(input: StartConversationInput) {
 type FinalizeAgentInput = {
   workflowId: string;
   messages: UIMessage[];
-  simulated?: boolean;
   callerName?: string | null;
   callerPhone?: string | null;
   conversationId?: string | null;
@@ -182,7 +181,6 @@ export async function finalizeAgentConversationAction(input: FinalizeAgentInput)
     workflow: found.workflow,
     transcript,
     meta,
-    simulated: input.simulated ?? true,
     callerName: input.callerName,
     callerPhone: input.callerPhone,
     conversationId: input.conversationId,

@@ -10,11 +10,9 @@ import type {
 import { db } from "@/db";
 import { conversations } from "@/db/schema";
 import {
-  ACTION_SUMMARIES,
   deriveSummary,
   isUrgent,
 } from "@/lib/simulator/engine";
-import type { WorkflowAction } from "@/db/schema";
 import { getModel } from "@/lib/agent/model";
 
 export function toTranscript(messages: UIMessage[]): ConversationTranscriptEntry[] {
@@ -40,6 +38,7 @@ const extractionSchema = z.object({
   callerName: z.string().nullable(),
   callerPhone: z.string().nullable(),
   isUrgent: z.boolean(),
+  actionAfterCollection: z.string().max(100).nullable(),
 });
 
 export async function extractConversationMeta(
@@ -80,7 +79,8 @@ Extract and return JSON with ONLY these keys:
   "summary": "one sentence summarizing the request and key details booked/agreed, or null",
   "callerName": "the customer's name mentioned in the call, or null",
   "callerPhone": "the customer's phone number if mentioned (digits only), or null",
-  "isUrgent": true or false based on the urgency rules below
+  "isUrgent": true or false based on the urgency rules below,
+  "actionAfterCollection": "a 1-3 word action the business should perform after this call, e.g. 'Call back', 'Prepare order', 'Book appointment', 'Send invoice'. Concise, imperative. null only if no clear action."
 }
 
 Fields to extract into collectedData (use these exact keys, include them ALL even when null):
@@ -107,6 +107,7 @@ Respond with JSON only, no markdown.`;
       callerName: null,
       callerPhone: null,
       isUrgent: false,
+      actionAfterCollection: null,
     };
   }
   return parsed.data;
@@ -148,12 +149,11 @@ export async function insertConversationRecord(input: {
   workflow: Workflow;
   transcript: ConversationTranscriptEntry[];
   meta: z.infer<typeof extractionSchema>;
-  simulated?: boolean;
   callerName?: string | null;
   callerPhone?: string | null;
   conversationId?: string | null;
 }) {
-  const { workflow, transcript, meta, simulated, conversationId } = input;
+  const { workflow, transcript, meta, conversationId } = input;
   const urgency = meta.isUrgent ?? isUrgent(workflow.conditions ?? [], meta.collectedData);
   const callerName =
     input.callerName?.trim() || meta.callerName?.trim() || null;
@@ -172,13 +172,10 @@ export async function insertConversationRecord(input: {
     intent: meta.intent,
     collectedData: meta.collectedData,
     summary: summaryText,
-    actionPerformed:
-      ACTION_SUMMARIES[workflow.actionAfterCollection as WorkflowAction] ??
-      ACTION_SUMMARIES.freeform,
+    actionAfterCollection: meta.actionAfterCollection,
     urgency: urgency ? "urgent" : "normal",
     followUpStatus: "pending",
     transcript,
-    simulated: simulated ?? true,
     updatedAt: new Date(),
   };
 

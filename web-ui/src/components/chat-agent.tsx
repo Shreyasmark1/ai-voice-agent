@@ -105,7 +105,6 @@ export function ChatAgent({ workflow }: { workflow: AgentWorkflow }) {
       await finalizeAgentConversationAction({
         workflowId: workflow.id,
         messages: messages,
-        simulated: true,
         callerName: callerName,
         callerPhone: callerPhone,
         conversationId: conversationId,

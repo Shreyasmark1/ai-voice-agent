@@ -37,7 +37,6 @@ Neon support (`web-ui/src/lib/db-neon.ts`).
         varchar language
         text greeting
         text closing_message
-        varchar action_after_collection
         jsonb conditions
         boolean active
     }
@@ -71,11 +70,10 @@ Neon support (`web-ui/src/lib/db-neon.ts`).
         text intent
         jsonb collected_data
         text summary
-        varchar action_performed
+        varchar action_after_collection
         varchar urgency
         varchar follow_up_status
         jsonb transcript
-        boolean simulated
     }
 ```
 
@@ -128,7 +126,6 @@ instantiation). Schema:
 | `language` | varchar(50) | `english` \| `hindi` |
 | `greeting` | text | first assistant message |
 | `closing_message` | text | exact text the agent uses to end; UI auto-saves when it appears |
-| `action_after_collection` | varchar(100) | `WorkflowAction` (see below) — what to do/record after collecting fields |
 | `conditions` | jsonb `WorkflowCondition[]` | urgency rules (see §4) |
 | `active` | boolean | default true |
 | `created_at` / `updated_at` | timestamp | |
@@ -177,7 +174,7 @@ Presence of a row ⇒ `/api/calls/config` includes `"calendar"` in
 
 ### `conversations`
 
-One row per handled call (simulated or real). Primary dashboard/records entity.
+One row per handled call. Primary dashboard/records entity.
 
 | Column | Type | Notes |
 |---|---|---|
@@ -189,11 +186,10 @@ One row per handled call (simulated or real). Primary dashboard/records entity.
 | `intent` | text | extracted short intent label |
 | `collected_data` | jsonb `Record<string, unknown>` | all workflow field keys → extracted values |
 | `summary` | text | one-sentence summary |
-| `action_performed` | varchar(100) | human text of `actionAfterCollection` (e.g. "Created an order enquiry") |
+| `action_after_collection` | varchar(100) | LLM-evaluated 1-3 word action the business should perform after the call (e.g. "Call back") |
 | `urgency` | varchar(20) | `normal` \| `urgent` |
 | `follow_up_status` | varchar(40) | default `pending`; toggled on the record page |
 | `transcript` | jsonb `ConversationTranscriptEntry[]` | `{role: "assistant"\|"customer", content}` |
-| `simulated` | boolean | true for simulator runs |
 | `created_at` / `updated_at` | timestamp | |
 
 Indexes: `conversations_business_id_idx`, `conversations_workflow_id_idx`.
@@ -207,15 +203,6 @@ varchar/jsonb; no PG enums).
 type WorkflowFieldType =
   | "text" | "textarea" | "phone" | "number"
   | "date" | "time" | "choice";
-
-type WorkflowAction =
-  | "order_enquiry"        // Cake order
-  | "delivery_request"     // Delivery / logistics
-  | "appointment_request"  // Clinic/dentist/doctor
-  | "callback_request"
-  | "qualified_lead"       // Real estate
-  | "service_request"      // Home / repair
-  | "freeform";            // default fallback
 
 type ConditionOperator =
   | "eq" | "neq" | "contains"
@@ -252,7 +239,7 @@ Example (Cake Shop template): `required_date within_days 1 ⇒ mark_urgent`.
 ## 5. Workflow data model (how a workflow drives the agent)
 
 ```
-workflow (greeting, closing, language, actionAfterCollection)
+workflow (greeting, closing, language)
   ├── workflowFields (ordered questions: key, label, type, required, options)
   ├── conditions (urgency rules → mark_urgent)
   └── business (name, industry, timezone, phone → prompt context)
@@ -277,17 +264,20 @@ workflow (greeting, closing, language, actionAfterCollection)
 3. `finalizeAgentConversationAction`:
    - convert transcript to `ConversationTranscriptEntry[]`;
    - `extractConversationMeta` LLM-extracts `collectedData / intent /
-     summary / callerName / callerPhone / isUrgent`;
+     summary / callerName / callerPhone / isUrgent / actionAfterCollection`;
    - `insertConversationRecord` upserts the row `status="completed"`,
-     `urgency`, `action_performed`, `simulated=true`, `follow_up_status="pending"`.
+     `urgency`, `action_after_collection`,
+     `follow_up_status="pending"`.
 4. Owner views the record (`/app/records/[id]`) and can flip
    `follow_up_status` (e.g. `pending → contacted/closed`).
 
 ## 7. Notes
 
 - **Migrations:** `0000` creates the base tables; `0001` adds
-  `google_calendar_accounts`. Generate new ones with `pnpm db:generate`,
-  apply with `pnpm db:migrate`.
+  `google_calendar_accounts`; `0002` drops `workflows.action_after_collection`
+  and `conversations.simulated`, and renames
+  `conversations.action_performed` → `action_after_collection`. Generate new
+  ones with `pnpm db:generate`, apply with `pnpm db:migrate`.
 - **No foreign keys to voice-agent**: the Python service owns no DB tables; it
   authenticates via the signed token and reads/writes only through the web
   app's HTTP endpoints.

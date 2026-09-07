@@ -78,7 +78,7 @@ export default async function RecordDetailPage({
             </div>
             <div>
               <span className="text-muted-foreground">Action:</span>{" "}
-              {conv.actionPerformed}
+              {conv.actionAfterCollection}
             </div>
           </CardContent>
         </Card>

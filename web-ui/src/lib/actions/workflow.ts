@@ -12,7 +12,6 @@ import { auth } from "@/auth";
 import {
   CONDITION_OPERATORS,
   FIELD_TYPES,
-  WORKFLOW_ACTIONS,
   WORKFLOW_LANGUAGES,
 } from "@/lib/constants";
 import { getTemplate } from "@/lib/templates";
@@ -45,9 +44,6 @@ const workflowSchema = z.object({
   ),
   greeting: z.string().min(1, "Greeting is required"),
   closingMessage: z.string().min(1, "Closing message is required"),
-  actionAfterCollection: z.enum(
-    WORKFLOW_ACTIONS.map((a) => a.value) as [string, ...string[]]
-  ),
   active: z.boolean().default(true),
   fields: z.array(workflowFieldSchema).min(1, "Add at least one question"),
   conditions: z.array(workflowConditionSchema).default([]),
@@ -78,7 +74,6 @@ function getFormMap(formData: FormData) {
     language: formData.get("language") || "english",
     greeting: formData.get("greeting"),
     closingMessage: formData.get("closingMessage"),
-    actionAfterCollection: formData.get("actionAfterCollection"),
     active: formData.get("active") === "on",
     fields,
     conditions,
@@ -260,7 +255,6 @@ export async function cloneWorkflowFromTemplateAction(formData: FormData) {
       language: template.language,
       greeting: template.greeting,
       closingMessage: template.closingMessage,
-      actionAfterCollection: template.actionAfterCollection,
       conditions: template.conditions,
       active: true,
     })

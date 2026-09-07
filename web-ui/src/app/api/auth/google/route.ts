@@ -23,9 +23,10 @@ function googleAuthUrl(state: string, redirectUri: string): string {
 }
 
 export async function GET(req: Request) {
+  const baseUrl = process.env.NEXTAUTH_URL || new URL(req.url).origin;
   const session = await auth();
   if (!session?.user?.id) {
-    return NextResponse.redirect(new URL("/login", req.url));
+    return NextResponse.redirect(new URL("/login", baseUrl));
   }
 
   if (!process.env.GOOGLE_CLIENT_ID || !process.env.GOOGLE_CLIENT_SECRET) {
@@ -35,7 +36,6 @@ export async function GET(req: Request) {
     );
   }
 
-  const baseUrl = process.env.NEXTAUTH_URL || new URL(req.url).origin;
   const redirectUri = `${baseUrl}/api/auth/google/callback`;
   const state = randomBytes(16).toString("hex");
 

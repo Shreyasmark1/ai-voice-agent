@@ -1,18 +1,7 @@
 import type {
   Workflow,
-  WorkflowAction,
   WorkflowCondition,
 } from "@/db/schema";
-
-const ACTION_SUMMARIES: Record<WorkflowAction, string> = {
-  order_enquiry: "Created an order enquiry",
-  delivery_request: "Created a delivery request",
-  appointment_request: "Created an appointment request",
-  callback_request: "Created a callback request",
-  qualified_lead: "Created a qualified lead",
-  service_request: "Created a service request",
-  freeform: "Recorded the enquiry",
-};
 
 function normalizeText(value: string): string {
   return value
@@ -105,5 +94,3 @@ export function deriveSummary(
   if (core) parts.push(`intent: ${core}`);
   return parts.join(" - ");
 }
-
-export { ACTION_SUMMARIES };

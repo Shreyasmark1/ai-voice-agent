@@ -37,16 +37,6 @@ export const FIELD_TYPES = [
   { value: "choice", label: "Choice (options)" },
 ] as const;
 
-export const WORKFLOW_ACTIONS = [
-  { value: "order_enquiry", label: "Create order enquiry" },
-  { value: "delivery_request", label: "Create delivery request" },
-  { value: "appointment_request", label: "Create appointment request" },
-  { value: "callback_request", label: "Create callback request" },
-  { value: "qualified_lead", label: "Create qualified lead" },
-  { value: "service_request", label: "Create service request" },
-  { value: "freeform", label: "Freeform / none" },
-] as const;
-
 export const CONDITION_OPERATORS = [
   { value: "eq", label: "is equal to" },
   { value: "neq", label: "is not equal to" },

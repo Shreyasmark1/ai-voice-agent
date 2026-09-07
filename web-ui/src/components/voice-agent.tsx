@@ -194,7 +194,6 @@ export function VoiceAgent({ workflow }: { workflow: AgentWorkflow }) {
       await finalizeAgentConversationAction({
         workflowId: workflow.id,
         messages,
-        simulated: true,
         callerName: callerName,
         callerPhone: callerPhone,
         conversationId: conversationId,

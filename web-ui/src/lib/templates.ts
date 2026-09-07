@@ -1,6 +1,5 @@
 import type {
   ConditionOperator,
-  WorkflowAction,
   WorkflowCondition,
   WorkflowFieldType,
 } from "@/db/schema";
@@ -23,7 +22,6 @@ export type WorkflowTemplate = {
   language: "english" | "hindi";
   greeting: string;
   closingMessage: string;
-  actionAfterCollection: WorkflowAction;
   fields: TemplateField[];
   conditions: WorkflowCondition[];
 };
@@ -54,7 +52,6 @@ export const WORKFLOW_TEMPLATES: WorkflowTemplate[] = [
       "Hi, thanks for calling! This is the cake shop's virtual assistant. Did you want to order a cake today, or is this a general enquiry?",
     closingMessage:
       "Perfect, your order enquiry is saved. We'll call you back shortly to confirm the details. Thanks for calling!",
-    actionAfterCollection: "order_enquiry",
     fields: [
       {
         key: "full_name",
@@ -139,7 +136,6 @@ export const WORKFLOW_TEMPLATES: WorkflowTemplate[] = [
       "Hello, thanks for calling! This is the delivery service assistant. Are you looking for a new delivery, a status update, or help with an existing delivery?",
     closingMessage:
       "Got it, your delivery request has been noted. Our team will confirm pickup and drop-off details shortly. Thanks for calling!",
-    actionAfterCollection: "delivery_request",
     fields: [
       {
         key: "full_name",
@@ -208,7 +204,6 @@ export const WORKFLOW_TEMPLATES: WorkflowTemplate[] = [
       "Hello, thanks for calling the clinic! Are you calling to book, reschedule, or cancel an appointment, or just to enquire?",
     closingMessage:
       "Thank you, your appointment request has been noted. Our front desk will confirm your slot shortly. Please note, I'm an assistant and cannot provide medical advice.",
-    actionAfterCollection: "appointment_request",
     fields: [
       {
         key: "patient_name",
@@ -270,7 +265,6 @@ export const WORKFLOW_TEMPLATES: WorkflowTemplate[] = [
       "Hi, thanks for calling! This is the property assistant. Are you looking to buy, rent, sell, or schedule a site visit?",
     closingMessage:
       "Great, your details are saved and a property consultant will reach out to you shortly. Thanks for calling!",
-    actionAfterCollection: "qualified_lead",
     fields: [
       {
         key: "full_name",
@@ -340,7 +334,6 @@ export const WORKFLOW_TEMPLATES: WorkflowTemplate[] = [
       "Hi, thanks for calling! This is the repair service assistant. Please tell me what service you need, and I'll take down the details.",
     closingMessage:
       "Thanks, your service request has been recorded. We'll get back to you shortly, sooner if it's urgent. Thanks for calling!",
-    actionAfterCollection: "service_request",
     fields: [
       {
         key: "full_name",

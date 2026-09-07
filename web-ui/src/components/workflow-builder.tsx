@@ -9,7 +9,6 @@ import {
 import {
   CONDITION_OPERATORS,
   FIELD_TYPES,
-  WORKFLOW_ACTIONS,
   WORKFLOW_LANGUAGES,
 } from "@/lib/constants";
 import type { WorkflowCondition, WorkflowFieldType } from "@/db/schema";
@@ -40,7 +39,6 @@ type WorkflowData = {
   language: string;
   greeting: string;
   closingMessage: string;
-  actionAfterCollection: string;
   active: boolean;
   conditions: WorkflowCondition[];
   fields: {
@@ -457,35 +455,6 @@ export function WorkflowBuilder({
               </label>
             </div>
           ))}
-        </div>
-      </section>
-
-      <section className="space-y-4">
-        <div>
-          <h2 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">
-            4. Action after collection
-          </h2>
-        </div>
-
-        <div className="space-y-2">
-          <Label htmlFor="actionAfterCollection">What happens after data is collected?</Label>
-          <select
-            id="actionAfterCollection"
-            name="actionAfterCollection"
-            defaultValue={workflow?.actionAfterCollection ?? "freeform"}
-            className="h-10 w-full rounded-xl border border-input bg-input/30 px-3 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring/50"
-          >
-            {WORKFLOW_ACTIONS.map((a) => (
-              <option key={a.value} value={a.value}>
-                {a.label}
-              </option>
-            ))}
-          </select>
-          {state?.fieldErrors?.actionAfterCollection && (
-            <p className="text-sm text-destructive">
-              {state.fieldErrors.actionAfterCollection[0]}
-            </p>
-          )}
         </div>
       </section>
 

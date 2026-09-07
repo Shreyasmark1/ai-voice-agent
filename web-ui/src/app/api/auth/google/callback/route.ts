@@ -10,9 +10,10 @@ import { GOOGLE_OAUTH_TOKEN_URL } from "@/lib/constants";
 export const runtime = "nodejs";
 
 export async function GET(req: Request) {
+  const baseUrl = process.env.NEXTAUTH_URL || new URL(req.url).origin;
   const session = await auth();
   if (!session?.user?.id) {
-    return NextResponse.redirect(new URL("/login", req.url));
+    return NextResponse.redirect(new URL("/login", baseUrl));
   }
 
   const url = new URL(req.url);
@@ -22,12 +23,11 @@ export async function GET(req: Request) {
   const storedState = cookieStore.get("google_oauth_state")?.value;
 
   if (!code || !state || state !== storedState) {
-    return NextResponse.redirect(new URL("/app/calendar?error=oauth", req.url));
+    return NextResponse.redirect(new URL("/app/calendar?error=oauth", baseUrl));
   }
 
   const clientId = process.env.GOOGLE_CLIENT_ID;
   const clientSecret = process.env.GOOGLE_CLIENT_SECRET;
-  const baseUrl = process.env.NEXTAUTH_URL || url.origin;
   const redirectUri = `${baseUrl}/api/auth/google/callback`;
   if (!clientId || !clientSecret) {
     return NextResponse.json(
@@ -63,7 +63,7 @@ export async function GET(req: Request) {
     }
   } catch {
     return NextResponse.redirect(
-      new URL("/app/calendar?error=token", req.url)
+      new URL("/app/calendar?error=token", baseUrl)
     );
   }
 
@@ -92,6 +92,6 @@ export async function GET(req: Request) {
 
   cookieStore.delete("google_oauth_state");
   return NextResponse.redirect(
-    new URL("/app/calendar?connected=1", req.url)
+    new URL("/app/calendar?connected=1", baseUrl)
   );
 }

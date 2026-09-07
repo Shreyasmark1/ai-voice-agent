@@ -57,7 +57,6 @@ export default async function WorkflowEditPage({
           language: workflow.language,
           greeting: workflow.greeting,
           closingMessage: workflow.closingMessage,
-          actionAfterCollection: workflow.actionAfterCollection,
           active: workflow.active,
           conditions: workflow.conditions,
           fields: workflow.fields.map((f) => ({

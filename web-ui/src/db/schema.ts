@@ -19,15 +19,6 @@ export type WorkflowFieldType =
   | "time"
   | "choice";
 
-export type WorkflowAction =
-  | "order_enquiry"
-  | "delivery_request"
-  | "appointment_request"
-  | "callback_request"
-  | "qualified_lead"
-  | "service_request"
-  | "freeform";
-
 export type ConditionOperator =
   | "eq"
   | "neq"
@@ -90,9 +81,6 @@ export const workflows = pgTable("workflows",{
     language: varchar("language", { length: 50 }).notNull().default("english"),
     greeting: text("greeting").notNull(),
     closingMessage: text("closing_message").notNull(),
-    actionAfterCollection: varchar("action_after_collection", {
-      length: 100,
-    }).notNull(),
     conditions: jsonb("conditions")
       .$type<WorkflowCondition[]>()
       .notNull()
@@ -162,7 +150,7 @@ export const conversations = pgTable("conversations",{
     intent: text("intent"),
     collectedData: jsonb("collected_data").$type<Record<string, unknown>>().notNull().default({}),
     summary: text("summary"),
-    actionPerformed: varchar("action_performed", { length: 100 }),
+    actionAfterCollection: varchar("action_after_collection", { length: 100 }),
     urgency: varchar("urgency", { length: 20 }).notNull().default("normal"),
     followUpStatus: varchar("follow_up_status", { length: 40 })
       .notNull()
@@ -171,7 +159,6 @@ export const conversations = pgTable("conversations",{
       .$type<ConversationTranscriptEntry[]>()
       .notNull()
       .default([]),
-    simulated: boolean("simulated").notNull().default(false),
     createdAt: timestamp("created_at", { mode: "date" }).notNull().defaultNow(),
     updatedAt: timestamp("updated_at", { mode: "date" }).notNull().defaultNow(),
   },

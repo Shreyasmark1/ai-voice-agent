@@ -18,16 +18,6 @@ import {
   Building03Icon,
 } from "@hugeicons/core-free-icons";
 
-const ACTION_LABELS: Record<string, string> = {
-  order_enquiry: "Order enquiry",
-  delivery_request: "Delivery request",
-  appointment_request: "Appointment request",
-  callback_request: "Callback request",
-  qualified_lead: "Qualified lead",
-  service_request: "Service request",
-  freeform: "Freeform",
-};
-
 export default async function WorkflowsPage() {
   const [workflows, businesses] = await Promise.all([
     getWorkflows(),
@@ -134,9 +124,6 @@ export default async function WorkflowsPage() {
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <p className="text-sm text-muted-foreground">
-                    {ACTION_LABELS[w.actionAfterCollection] ?? "Freeform"}
-                  </p>
                   {w.description && (
                     <p className="mt-2 line-clamp-2 text-sm text-muted-foreground">
                       {w.description}

@@ -35,8 +35,6 @@ export function buildSystemPrompt(context: AgentContext): string {
     ? "You must respond entirely in Hindi (Hinglish/Hindi script is fine, but keep it natural and spoken). The workflow is configured for Hindi speakers."
     : "You must respond in clear, friendly, natural English. Use spoken, conversational tone as if on a phone call.";
 
-  const actionInstruction = actionLine(workflow.actionAfterCollection);
-
   const now = new Date().toLocaleString("en-US", {
     timeZone: business.timezone,
     dateStyle: "full",
@@ -70,9 +68,7 @@ ${fieldLines || "(none required)"}
 URGENCY RULES (if any of these are true, the call should be treated as URGENT and prioritised):
 ${conditionLines || "(none)"}
 
-You are ONLY a spoken-voice assistant for this one call. Do not answer questions unrelated to the business. If the caller is confused, repeat the question in a friendlier way. Keep replies short and natural — like talking on the phone.
-
-Action to take/record after the call: ${actionInstruction}`;
+You are ONLY a spoken-voice assistant for this one call. Do not answer questions unrelated to the business. If the caller is confused, repeat the question in a friendlier way. Keep replies short and natural — like talking on the phone.`;
 }
 
 function formatCondition(c: WorkflowCondition): string {
@@ -90,22 +86,3 @@ const CONDITION_OPERATOR_TEXT: Record<string, string> = {
   lte: "is less than or equal to",
   within_days: "is within",
 };
-
-function actionLine(action: string | null | undefined): string {
-  switch (action) {
-    case "order_enquiry":
-      return "Record an order enquiry so the business can call back to confirm. If the caller gives a delivery/pickup time (e.g. \"within 2 hours\"), book it on the calendar.";
-    case "delivery_request":
-      return "Create a delivery request so the business can arrange delivery. If the caller gives a delivery time (e.g. \"within 2 hours\"), book it on the calendar.";
-    case "appointment_request":
-      return "Create an appointment request and, where a slot is chosen, use the calendar to book the time.";
-    case "callback_request":
-      return "Log a callback request with the caller's details so the business can call back.";
-    case "qualified_lead":
-      return "Qualify the caller as a lead and note their interest.";
-    case "service_request":
-      return "Log a service request so the business can follow up. If the caller gives a visit/service time, book it on the calendar.";
-    default:
-      return "Reason about the request from context, and if the caller gives a date/time, book it on the calendar.";
-  }
-}
