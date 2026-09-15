@@ -70,5 +70,9 @@ def _sarvam_tts(*, language: Language, voice: str):
             model=settings.tts_model,
             voice=voice,
             language=language,
+            pace=settings.tts_pace,
+            temperature=settings.tts_temperature,
+            min_buffer_size=settings.tts_min_buffer_size,
+            max_chunk_length=settings.tts_max_chunk_length,
         ),
     )

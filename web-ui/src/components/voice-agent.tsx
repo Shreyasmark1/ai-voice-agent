@@ -108,7 +108,7 @@ export function VoiceAgent({ workflow }: { workflow: AgentWorkflow }) {
       transport: new WebSocketTransport({
         serializer: new AgentProtobufFrameSerializer(),
         recorderSampleRate: 16000,
-        playerSampleRate: 16000,
+        playerSampleRate: 24000,
       }),
       enableMic: true,
       enableCam: false,

@@ -22,6 +22,12 @@ class Settings(BaseSettings):
     stt_provider: Literal["sarvam", "openai"]
     stt_model: str
 
+    # Sarvam TTS settings
+    tts_pace: float = 0.95
+    tts_temperature: float = 0.4
+    tts_min_buffer_size: int = 200
+    tts_max_chunk_length: int = 300
+
     model_config = {"env_file": ENV_FILE, "env_file_encoding": "utf-8"}
 
     @model_validator(mode="after")
