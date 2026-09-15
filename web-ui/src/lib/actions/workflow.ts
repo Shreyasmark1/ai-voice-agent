@@ -13,7 +13,6 @@ import {
   CONDITION_OPERATORS,
   FIELD_TYPES,
   URGENCY_VALUES,
-  WORKFLOW_LANGUAGES,
 } from "@/lib/constants";
 import { getTemplate } from "@/lib/templates";
 
@@ -40,9 +39,6 @@ const workflowSchema = z.object({
   businessId: z.string().min(1, "Select a business"),
   name: z.string().min(1, "Workflow name is required").max(255),
   description: z.string().max(2000).nullable().optional(),
-  language: z.enum(
-    WORKFLOW_LANGUAGES.map((l) => l.value) as [string, ...string[]]
-  ),
   greeting: z.string().min(1, "Greeting is required"),
   closingMessage: z.string().min(1, "Closing message is required"),
   active: z.boolean().default(true),
@@ -72,7 +68,6 @@ function getFormMap(formData: FormData) {
     businessId: formData.get("businessId"),
     name: formData.get("name"),
     description: formData.get("description") || null,
-    language: formData.get("language") || "english",
     greeting: formData.get("greeting"),
     closingMessage: formData.get("closingMessage"),
     active: formData.get("active") === "on",
@@ -253,7 +248,6 @@ export async function cloneWorkflowFromTemplateAction(formData: FormData) {
       name: template.name,
       description: template.description,
       trigger: "missed_call",
-      language: template.language,
       greeting: template.greeting,
       closingMessage: template.closingMessage,
       conditions: template.conditions,

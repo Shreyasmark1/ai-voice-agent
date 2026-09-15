@@ -119,8 +119,7 @@ export default async function WorkflowsPage() {
                     </span>
                   </div>
                   <CardDescription className="truncate">
-                    {businessNames.get(w.businessId) ?? "Unknown business"} ·{" "}
-                    {w.language}
+                    {businessNames.get(w.businessId) ?? "Unknown business"}
                   </CardDescription>
                 </CardHeader>
                 <CardContent>

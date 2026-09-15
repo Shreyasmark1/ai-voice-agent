@@ -57,7 +57,6 @@ export default async function SimulatorRunPage({
           businessId: workflow.businessId,
           greeting: workflow.greeting,
           closingMessage: workflow.closingMessage,
-          language: workflow.language,
         }}
       />
     </div>

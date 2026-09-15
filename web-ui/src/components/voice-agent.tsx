@@ -7,16 +7,17 @@ import { WebSocketTransport } from "@pipecat-ai/websocket-transport";
 
 import type { Workflow } from "@/db/schema";
 import { finalizeAgentConversationAction, startConversationAction } from "@/lib/actions/conversation";
+import { DEFAULT_LANGUAGE, DEFAULT_VOICE } from "@/lib/constants";
 import { TOOL_SUMMARY } from "@/lib/tools";
 import { AgentProtobufFrameSerializer } from "@/lib/agent/protobuf-frame-serializer";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { VoiceAgentStartDialog } from "@/components/voice-agent-start-dialog";
 
 type AgentWorkflow = Pick<Workflow, "id" | "businessId"> & {
   greeting: string;
   closingMessage: string;
-  language: string;
 };
 
 type TranscriptEntry = {
@@ -64,6 +65,9 @@ export function VoiceAgent({ workflow }: { workflow: AgentWorkflow }) {
   const router = useRouter();
   const [callerName, setCallerName] = useState("");
   const [callerPhone, setCallerPhone] = useState("");
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [language, setLanguage] = useState(DEFAULT_LANGUAGE);
+  const [voice, setVoice] = useState(DEFAULT_VOICE);
   const [started, setStarted] = useState(false);
   const [starting, setStarting] = useState(false);
   const [conversationId, setConversationId] = useState<string | null>(null);
@@ -138,47 +142,56 @@ export function VoiceAgent({ workflow }: { workflow: AgentWorkflow }) {
     return client;
   }, [addTranscript]);
 
-  const handleStart = useCallback(async () => {
-    setError(null);
-    setStarting(true);
-    setState("connecting");
-    startTimeRef.current = Date.now();
-    setElapsed(0);
+  const handleStart = useCallback(
+    async (opts: { language: string; voice: string }) => {
+      setError(null);
+      setStarting(true);
+      setState("connecting");
+      startTimeRef.current = Date.now();
+      setElapsed(0);
 
-    try {
-      // Record the call up-front so caller details survive connection failure.
-      const { conversationId: id } = await startConversationAction({
-        workflowId: workflow.id,
-        callerName,
-        callerPhone,
-      });
-      setConversationId(id);
-      setStarted(true);
+      try {
+        // Record the call up-front so caller details survive connection failure.
+        const { conversationId: id } = await startConversationAction({
+          workflowId: workflow.id,
+          callerName,
+          callerPhone,
+          language: opts.language,
+          voice: opts.voice,
+        });
+        setConversationId(id);
+        setStarted(true);
 
-      const res = await fetch("/api/calls", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ workflowId: workflow.id }),
-      });
-      if (!res.ok) {
-        const body = await res.json().catch(() => ({}));
-        throw new Error(body.error || "Failed to start call");
+        const res = await fetch("/api/calls", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            workflowId: workflow.id,
+            language: opts.language,
+            voice: opts.voice,
+          }),
+        });
+        if (!res.ok) {
+          const body = await res.json().catch(() => ({}));
+          throw new Error(body.error || "Failed to start call");
+        }
+        const { token, wsUrl } = await res.json();
+
+        const client = makeClient();
+        await withTimeout(
+          client.connect({ wsUrl, token }),
+          45_000,
+          "Timed out connecting to the voice agent. Try again."
+        );
+      } catch (err) {
+        setError(err instanceof Error ? err.message : "Failed to start voice call");
+        setState("idle");
+      } finally {
+        setStarting(false);
       }
-      const { token, wsUrl } = await res.json();
-
-      const client = makeClient();
-      await withTimeout(
-        client.connect({ wsUrl, token }),
-        45_000,
-        "Timed out connecting to the voice agent. Try again."
-      );
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to start voice call");
-      setState("idle");
-    } finally {
-      setStarting(false);
-    }
-  }, [workflow.id, callerName, callerPhone, makeClient]);
+    },
+    [workflow.id, callerName, callerPhone, makeClient]
+  );
 
   const handleFinish = useCallback(async () => {
     setFinalizing(true);
@@ -227,56 +240,73 @@ export function VoiceAgent({ workflow }: { workflow: AgentWorkflow }) {
     setSaved(false);
     setCallerName("");
     setCallerPhone("");
+    setDialogOpen(false);
     startTimeRef.current = null;
     setElapsed(0);
   }, []);
 
   if (!started) {
     return (
-      <form
-        onSubmit={(e) => {
-          e.preventDefault();
-          handleStart();
-        }}
-        className="space-y-5 rounded-3xl border border-border bg-card p-6"
-      >
-        <div>
-          <h2 className="font-semibold">Start a voice call</h2>
-          <p className="text-sm text-muted-foreground">
-            Speak to an AI voice agent that asks for the details your workflow
-            needs. Your microphone will be used to capture your voice.
-          </p>
-        </div>
-
-        <div className="grid gap-4 sm:grid-cols-2">
-          <div className="space-y-2">
-            <Label htmlFor="voice-caller-name">Caller name (optional)</Label>
-            <Input
-              id="voice-caller-name"
-              value={callerName}
-              onChange={(e) => setCallerName(e.target.value)}
-              placeholder="e.g. Priya Sharma"
-            />
+      <>
+        <form
+          onSubmit={(e) => {
+            e.preventDefault();
+            setDialogOpen(true);
+          }}
+          className="space-y-5 rounded-3xl border border-border bg-card p-6"
+        >
+          <div>
+            <h2 className="font-semibold">Start a voice call</h2>
+            <p className="text-sm text-muted-foreground">
+              Speak to an AI voice agent that asks for the details your workflow
+              needs. Your microphone will be used to capture your voice.
+            </p>
           </div>
-          <div className="space-y-2">
-            <Label htmlFor="voice-caller-phone">Caller phone (optional)</Label>
-            <Input
-              id="voice-caller-phone"
-              value={callerPhone}
-              onChange={(e) => setCallerPhone(e.target.value)}
-              placeholder="e.g. 98765 43210"
-            />
+
+          <div className="grid gap-4 sm:grid-cols-2">
+            <div className="space-y-2">
+              <Label htmlFor="voice-caller-name">Caller name (optional)</Label>
+              <Input
+                id="voice-caller-name"
+                value={callerName}
+                onChange={(e) => setCallerName(e.target.value)}
+                placeholder="e.g. Priya Sharma"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="voice-caller-phone">Caller phone (optional)</Label>
+              <Input
+                id="voice-caller-phone"
+                value={callerPhone}
+                onChange={(e) => setCallerPhone(e.target.value)}
+                placeholder="e.g. 98765 43210"
+              />
+            </div>
           </div>
-        </div>
 
-        {error && (
-          <p className="text-sm text-destructive">{error}</p>
-        )}
+          {error && (
+            <p className="text-sm text-destructive">{error}</p>
+          )}
 
-        <Button type="submit" className="w-full" disabled={starting}>
-          {starting ? "Starting…" : "Start voice call"}
-        </Button>
-      </form>
+          <Button type="submit" disabled={starting}>
+            {starting ? "Starting…" : "Start voice call"}
+          </Button>
+        </form>
+
+        <VoiceAgentStartDialog
+          open={dialogOpen}
+          onOpenChange={setDialogOpen}
+          starting={starting}
+          initialLanguage={language}
+          initialVoice={voice}
+          onConfirm={(opts) => {
+            setLanguage(opts.language);
+            setVoice(opts.voice);
+            setDialogOpen(false);
+            handleStart(opts);
+          }}
+        />
+      </>
     );
   }
 

@@ -6,7 +6,7 @@ import {
   updateBusinessAction,
   type BusinessState,
 } from "@/lib/actions/business";
-import { INDUSTRIES, BUSINESS_LANGUAGES, TIMEZONES } from "@/lib/constants";
+import { INDUSTRIES, TIMEZONES } from "@/lib/constants";
 import type { Business } from "@/db/schema";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -99,36 +99,6 @@ export function BusinessForm({ business }: { business?: Business }) {
           ))}
         </select>
       </div>
-
-      <fieldset className="space-y-2">
-        <Label>Languages</Label>
-        <div className="flex flex-wrap gap-3">
-          {BUSINESS_LANGUAGES.map((l) => (
-            <label
-              key={l}
-              className="flex items-center gap-2 text-sm font-medium capitalize"
-            >
-              <input
-                type="checkbox"
-                name="languages"
-                value={l}
-                defaultChecked={
-                  business
-                    ? business.languages.includes(l)
-                    : l === "english"
-                }
-                className="size-4 rounded"
-              />
-              {l}
-            </label>
-          ))}
-        </div>
-        {state?.fieldErrors?.languages && (
-          <p className="text-sm text-destructive">
-            {state.fieldErrors.languages[0]}
-          </p>
-        )}
-      </fieldset>
 
       {state?.error && (
         <p className="text-sm text-destructive" role="alert">

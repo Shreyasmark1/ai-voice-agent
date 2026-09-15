@@ -65,16 +65,6 @@ export default async function BusinessesPage() {
                   <CardDescription>{b.industry}</CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <div className="flex flex-wrap gap-1">
-                    {b.languages.map((l) => (
-                      <span
-                        key={l}
-                        className="rounded-full bg-muted px-2 py-0.5 text-xs capitalize text-muted-foreground"
-                      >
-                        {l}
-                      </span>
-                    ))}
-                  </div>
                   {b.phone && (
                     <p className="mt-3 text-sm text-muted-foreground">{b.phone}</p>
                   )}

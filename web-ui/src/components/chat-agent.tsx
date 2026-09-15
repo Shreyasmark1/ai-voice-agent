@@ -10,6 +10,8 @@ import {
   finalizeAgentConversationAction,
   startConversationAction,
 } from "@/lib/actions/conversation";
+import { AGENT_LANGUAGES, DEFAULT_LANGUAGE } from "@/lib/constants";
+import { PresetOrCustomSelect } from "@/components/preset-or-custom-select";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -26,10 +28,12 @@ export function ChatAgent({ workflow }: { workflow: AgentWorkflow }) {
   const router = useRouter();
   const [callerName, setCallerName] = useState("");
   const [callerPhone, setCallerPhone] = useState("");
+  const [language, setLanguage] = useState(DEFAULT_LANGUAGE);
   const [started, setStarted] = useState(false);
   const [starting, setStarting] = useState(false);
   const [startError, setStartError] = useState<string | null>(null);
   const [conversationId, setConversationId] = useState<string | null>(null);
+  const [localizedClosing, setLocalizedClosing] = useState<string | null>(null);
   const [input, setInput] = useState("");
   const [finalizing, setFinalizing] = useState(false);
   const [saved, setSaved] = useState(false);
@@ -49,18 +53,22 @@ export function ChatAgent({ workflow }: { workflow: AgentWorkflow }) {
     setStarting(true);
     setStartError(null);
     try {
-      const { conversationId: id } = await startConversationAction({
-        workflowId: workflow.id,
-        callerName,
-        callerPhone,
-      });
+      const lang = language.trim() || DEFAULT_LANGUAGE;
+      const { conversationId: id, greeting, closingMessage } =
+        await startConversationAction({
+          workflowId: workflow.id,
+          callerName,
+          callerPhone,
+          language: lang,
+        });
       setConversationId(id);
+      setLocalizedClosing(closingMessage);
       setStarted(true);
       setMessages([
         {
           id: "greeting",
           role: "assistant" as const,
-          parts: [{ type: "text" as const, text: workflow.greeting }],
+          parts: [{ type: "text" as const, text: greeting }],
         },
       ]);
     } catch (err) {
@@ -75,7 +83,7 @@ export function ChatAgent({ workflow }: { workflow: AgentWorkflow }) {
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (!input.trim() || status !== "ready") return;
-    void sendMessage({ text: input.trim() });
+    void sendMessage({ text: input.trim() }, { body: { language } });
     setInput("");
   }
 
@@ -87,14 +95,14 @@ export function ChatAgent({ workflow }: { workflow: AgentWorkflow }) {
       .map((p) => (p as { text?: string }).text ?? "")
       .join(" ")
       .trim();
-    const closing = workflow.closingMessage.trim();
+    const closing = (localizedClosing ?? workflow.closingMessage).trim();
     if (!text || !closing) return false;
     // The greeting must not trigger auto-save; only the configured closing message.
     const norm = (s: string) => s.toLowerCase().replace(/\s+/g, " ").trim();
     const t = norm(text);
     const c = norm(closing);
     return t === c || t.includes(c) || c.includes(t);
-  }, [messages, workflow.closingMessage]);
+  }, [messages, workflow.closingMessage, localizedClosing]);
 
   const busy = status !== "ready" && status !== "streaming";
   const streaming = status === "streaming";
@@ -142,11 +150,13 @@ export function ChatAgent({ workflow }: { workflow: AgentWorkflow }) {
     setFinalizing(false);
     finalizingRef.current = false;
     setConversationId(null);
+    setLocalizedClosing(null);
     setStartError(null);
     setMessages([]);
     setInput("");
     setCallerName("");
     setCallerPhone("");
+    setLanguage(DEFAULT_LANGUAGE);
   }, [setMessages]);
 
   if (!started) {
@@ -163,28 +173,36 @@ export function ChatAgent({ workflow }: { workflow: AgentWorkflow }) {
           </p>
         </div>
 
-        <div className="grid gap-4 sm:grid-cols-2">
-          <div className="space-y-2">
-            <Label htmlFor="agent-caller-name">Caller name (optional)</Label>
-            <Input
-              id="agent-caller-name"
-              value={callerName}
-              onChange={(e) => setCallerName(e.target.value)}
-              placeholder="e.g. Priya Sharma"
-            />
+<div className="grid gap-4 sm:grid-cols-2">
+            <div className="space-y-2">
+              <Label htmlFor="agent-caller-name">Caller name (optional)</Label>
+              <Input
+                id="agent-caller-name"
+                value={callerName}
+                onChange={(e) => setCallerName(e.target.value)}
+                placeholder="e.g. Priya Sharma"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="agent-caller-phone">Caller phone (optional)</Label>
+              <Input
+                id="agent-caller-phone"
+                value={callerPhone}
+                onChange={(e) => setCallerPhone(e.target.value)}
+                placeholder="e.g. 98765 43210"
+              />
+            </div>
           </div>
-          <div className="space-y-2">
-            <Label htmlFor="agent-caller-phone">Caller phone (optional)</Label>
-            <Input
-              id="agent-caller-phone"
-              value={callerPhone}
-              onChange={(e) => setCallerPhone(e.target.value)}
-              placeholder="e.g. 98765 43210"
-            />
-          </div>
-        </div>
 
-        {startError && (
+          <PresetOrCustomSelect
+            label="Conversation language"
+            value={language}
+            onChange={setLanguage}
+            presets={AGENT_LANGUAGES.map((l) => ({ value: l.code, label: l.label }))}
+            customPlaceholder="e.g. hi-IN"
+          />
+
+          {startError && (
           <p className="text-sm text-destructive">{startError}</p>
         )}
         {error && (

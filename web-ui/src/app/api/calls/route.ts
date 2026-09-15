@@ -7,6 +7,7 @@ import { db } from "@/db";
 import { businesses, workflows } from "@/db/schema";
 import { and, eq } from "drizzle-orm";
 import { signToken, type CallTokenPayload } from "@/lib/auth/token";
+import { DEFAULT_LANGUAGE, DEFAULT_VOICE } from "@/lib/constants";
 
 const SECRET = process.env.VOICE_AGENT_SECRET || "";
 
@@ -24,7 +25,7 @@ export async function POST(req: Request) {
     );
   }
 
-  const { workflowId } = await req.json();
+  const { workflowId, language, voice } = await req.json();
   
   if (!workflowId) {
     return NextResponse.json({ error: "workflowId required" }, { status: 400 });
@@ -44,9 +45,9 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "Workflow not found" }, { status: 404 });
   }
 
-  const wf = row[0].workflow;
   const callId = randomUUID();
-  const lang = (wf.language as string) || "en-IN";
+  const lang = (language as string) || DEFAULT_LANGUAGE;
+  const callVoice = (voice as string) || DEFAULT_VOICE;
 
   const now = Math.floor(Date.now() / 1000);
   const token = signToken<CallTokenPayload>({
@@ -54,6 +55,7 @@ export async function POST(req: Request) {
     workflow_id: workflowId,
     user_id: session.user.id,
     language: lang,
+    voice: callVoice,
     iat: now,
     exp: now + 600, // 10 minutes
   });

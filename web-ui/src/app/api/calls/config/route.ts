@@ -5,6 +5,8 @@ import { db } from "@/db";
 import { businesses, workflowFields, workflows } from "@/db/schema";
 import { verifyToken, type CallTokenPayload } from "@/lib/auth/token";
 import { buildSystemPrompt } from "@/lib/agent/prompt";
+import { localizeGreetingAndClosing } from "@/lib/agent/localize";
+import { DEFAULT_LANGUAGE, DEFAULT_VOICE } from "@/lib/constants";
 import { hasGoogleCalendar } from "@/lib/calendar";
 
 export async function GET(req: Request) {
@@ -43,12 +45,24 @@ export async function GET(req: Request) {
     .orderBy(workflowFields.order);
 
   const workflow = row[0].workflow;
-  
-  const system = buildSystemPrompt({
-    business: row[0].business,
-    workflow,
-    fields,
+
+  const language = (payload.language as string) || DEFAULT_LANGUAGE;
+  const voice = (payload.voice as string) || DEFAULT_VOICE;
+
+  const localized = await localizeGreetingAndClosing({
+    greeting: workflow.greeting || "Hello! How can I help you?",
+    closingMessage: workflow.closingMessage,
+    language,
   });
+
+  const system = buildSystemPrompt(
+    {
+      business: row[0].business,
+      workflow,
+      fields,
+    },
+    { language, closingMessageOverride: localized.closingMessage }
+  );
 
   const availableTools: string[] = [];
   const canUseCalendar = await hasGoogleCalendar(payload.user_id);
@@ -56,8 +70,9 @@ export async function GET(req: Request) {
 
   return NextResponse.json({
     system,
-    language: workflow.language || "en-IN",
-    greeting: workflow.greeting || "Hello! How can I help you?",
+    language,
+    voice,
+    greeting: localized.greeting,
     availableTools,
   });
 }

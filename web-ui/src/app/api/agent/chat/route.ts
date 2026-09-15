@@ -1,10 +1,12 @@
-import { convertToModelMessages, createUIMessageStreamResponse, isStepCount, streamText, toUIMessageStream, type UIMessage } from "ai";
+import { convertToModelMessages, createUIMessageStreamResponse, isStepCount, streamText, toUIMessageStream } from "ai";
 import { and, eq } from "drizzle-orm";
 
 import { db } from "@/db";
 import { businesses, workflowFields, workflows } from "@/db/schema";
 import { auth } from "@/auth";
 import { buildSystemPrompt } from "@/lib/agent/prompt";
+import { localizeGreetingAndClosing } from "@/lib/agent/localize";
+import { DEFAULT_LANGUAGE } from "@/lib/constants";
 import { getCalendarServiceForUser } from "@/lib/calendar";
 import { getTools } from "@/lib/tools";
 import { getModel } from "@/lib/agent/model";
@@ -19,7 +21,7 @@ export async function POST(req: Request) {
     return Response.json({ error: "Not authenticated" }, { status: 401 });
   }
 
-  const { messages, workflowId }: { messages: UIMessage[]; workflowId: string } = await req.json();
+  const { messages, workflowId, language: requestedLanguage } = await req.json();
 
   if (!workflowId || !Array.isArray(messages)) {
     return Response.json({ error: "Invalid body" }, { status: 400 });
@@ -45,11 +47,22 @@ export async function POST(req: Request) {
     .where(eq(workflowFields.workflowId, workflowId))
     .orderBy(workflowFields.order);
 
-  const system = buildSystemPrompt({
-    business: found.business,
-    workflow: found.workflow,
-    fields,
+  const language = (requestedLanguage as string) || DEFAULT_LANGUAGE;
+
+  const localized = await localizeGreetingAndClosing({
+    greeting: found.workflow.greeting || "Hello! How can I help you?",
+    closingMessage: found.workflow.closingMessage,
+    language,
   });
+
+  const system = buildSystemPrompt(
+    {
+      business: found.business,
+      workflow: found.workflow,
+      fields,
+    },
+    { language, closingMessageOverride: localized.closingMessage }
+  );
 
   const calendar = await getCalendarServiceForUser(session.user.id);
   

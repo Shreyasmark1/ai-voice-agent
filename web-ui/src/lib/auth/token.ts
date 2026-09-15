@@ -7,6 +7,7 @@ export type CallTokenPayload = {
   workflow_id: string;
   user_id: string;
   language: string;
+  voice: string;
   iat: number;
   exp: number;
 };

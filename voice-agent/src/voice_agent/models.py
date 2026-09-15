@@ -29,7 +29,7 @@ def build_llm(*, system_instruction: str):
 
 def build_stt(*, language: Language):
     if settings.stt_provider == "sarvam":
-        return _sarvam_stt()
+        return _sarvam_stt(language=language)
     return OpenAISTTService(
         api_key=settings.llm_api_key,
         base_url=settings.llm_api_endpoint,
@@ -39,35 +39,36 @@ def build_stt(*, language: Language):
         ),
     )
 
-def build_tts(*, language: Language):
+def build_tts(*, language: Language, voice: str):
     if settings.tts_provider == "sarvam":
-        return _sarvam_tts(language=language)
+        return _sarvam_tts(language=language, voice=voice)
     return OpenAITTSService(
         api_key=settings.llm_api_key,
         base_url=settings.llm_api_endpoint,
         settings=OpenAITTSService.Settings(
             model=settings.tts_model,
-            voice="alloy",
+            voice=voice,
             language=language,
         ),
     )
 
-def _sarvam_stt():
+def _sarvam_stt(*, language: Language):
     return SarvamSTTService(
         api_key=settings.sarvam_api_key,
         mode="transcribe",
         settings=SarvamSTTService.Settings(
             vad_signals=True,
             high_vad_sensitivity=True,
+            language=language,
         ),
     )
 
-def _sarvam_tts(*, language: Language):
+def _sarvam_tts(*, language: Language, voice: str):
     return SarvamTTSService(
         api_key=settings.sarvam_api_key,
         settings=SarvamTTSService.Settings(
             model=settings.tts_model,
-            voice="shubh",
+            voice=voice,
             language=language,
         ),
     )

@@ -27,6 +27,7 @@ async def load_call_context(token: str):
     return {
         "system_prompt": config.get("system", ""),
         "language_code": config.get("language") or "en-IN",
+        "voice": config.get("voice") or "shubh",
         "greeting": config.get("greeting", "Hello! How can I help you?"),
         "available_tools": config.get("availableTools") or [],
     }

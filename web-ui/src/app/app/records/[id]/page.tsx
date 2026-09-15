@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 import Link from "next/link";
 
 import { getConversation } from "@/lib/actions/conversation";
+import { languageLabel } from "@/lib/agent/localize";
 import { FollowUpStatusButton } from "@/components/follow-up-status-button";
 import { urgencyTextClass } from "@/lib/urgency";
 import { buttonVariants } from "@/components/ui/button";
@@ -71,6 +72,15 @@ export default async function RecordDetailPage({
             <div><span className="text-muted-foreground">Business:</span> {record.businessName}</div>
             <div><span className="text-muted-foreground">Workflow:</span> {record.workflowName}</div>
             <div><span className="text-muted-foreground">Intent:</span> {conv.intent}</div>
+            <div>
+              <span className="text-muted-foreground">Language:</span>{" "}
+              {languageLabel(conv.language)}
+            </div>
+            {conv.voice && (
+              <div>
+                <span className="text-muted-foreground">Voice:</span> {conv.voice}
+              </div>
+            )}
             <div>
               <span className="text-muted-foreground">Urgency:</span>{" "}
               <span className={urgencyTextClass(conv.urgency)}>

@@ -54,7 +54,6 @@ export default async function WorkflowEditPage({
           businessId: workflow.businessId,
           name: workflow.name,
           description: workflow.description,
-          language: workflow.language,
           greeting: workflow.greeting,
           closingMessage: workflow.closingMessage,
           active: workflow.active,

@@ -1,6 +1,7 @@
 import Link from "next/link";
 
 import { getConversations } from "@/lib/actions/conversation";
+import { languageLabel } from "@/lib/agent/localize";
 import { urgencyBadge } from "@/lib/urgency";
 import {
   Card,
@@ -56,6 +57,7 @@ export default async function RecordsPage() {
                 <th className="px-4 py-3 font-medium">Caller</th>
                 <th className="px-4 py-3 font-medium">Business / Workflow</th>
                 <th className="px-4 py-3 font-medium">Intent</th>
+                <th className="px-4 py-3 font-medium">Language / Voice</th>
                 <th className="px-4 py-3 font-medium">Urgency</th>
                 <th className="px-4 py-3 font-medium">Status</th>
                 <th className="px-4 py-3 font-medium">Date</th>
@@ -89,6 +91,12 @@ export default async function RecordsPage() {
                     </div>
                   </td>
                   <td className="px-4 py-3">{r.conversation.intent}</td>
+                  <td className="px-4 py-3 text-muted-foreground">
+                    <div>{languageLabel(r.conversation.language)}</div>
+                    {r.conversation.voice && (
+                      <div className="text-xs">{r.conversation.voice}</div>
+                    )}
+                  </td>
                   <td className="px-4 py-3">
                     <span className={badge.className}>{badge.label}</span>
                   </td>

@@ -10,7 +10,6 @@ import { cn } from "@/lib/utils";
 type SimulatorWorkflow = Pick<Workflow, "id" | "businessId"> & {
   greeting: string;
   closingMessage: string;
-  language: string;
 };
 
 export function SimulatorModeToggle({

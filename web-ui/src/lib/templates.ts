@@ -4,7 +4,6 @@ import type {
   WorkflowFieldType,
 } from "@/db/schema";
 import type { Industry } from "@/lib/constants";
-
 type TemplateField = {
   key: string;
   label: string;
@@ -13,19 +12,16 @@ type TemplateField = {
   options?: string[];
   placeholder?: string;
 };
-
 export type WorkflowTemplate = {
   id: string;
   industry: Industry;
   name: string;
   description: string;
-  language: "english" | "hindi";
   greeting: string;
   closingMessage: string;
   fields: TemplateField[];
   conditions: WorkflowCondition[];
 };
-
 function condition(
   fieldKey: string,
   operator: ConditionOperator,
@@ -39,7 +35,6 @@ function condition(
     urgency: "urgent",
   };
 }
-
 export const WORKFLOW_TEMPLATES: WorkflowTemplate[] = [
   {
     id: "cake_shop",
@@ -47,7 +42,6 @@ export const WORKFLOW_TEMPLATES: WorkflowTemplate[] = [
     name: "Missed call - Cake order",
     description:
       "Collects cake order details over a missed call: type, flavour, weight, date, message, delivery/pickup and budget. Flags orders needed within 24 hours as urgent.",
-    language: "english",
     greeting:
       "Hi, thanks for calling! This is the cake shop's virtual assistant. Did you want to order a cake today, or is this a general enquiry?",
     closingMessage:
@@ -131,7 +125,6 @@ export const WORKFLOW_TEMPLATES: WorkflowTemplate[] = [
     name: "Missed call - Delivery request",
     description:
       "Handles new delivery requests, status updates, and help with existing deliveries over a missed call.",
-    language: "english",
     greeting:
       "Hello, thanks for calling! This is the delivery service assistant. Are you looking for a new delivery, a status update, or help with an existing delivery?",
     closingMessage:
@@ -199,7 +192,6 @@ export const WORKFLOW_TEMPLATES: WorkflowTemplate[] = [
     name: "Missed call - Appointment request",
     description:
       "Collects patient details to book, reschedule, or cancel an appointment. The assistant never gives medical advice.",
-    language: "english",
     greeting:
       "Hello, thanks for calling the clinic! Are you calling to book, reschedule, or cancel an appointment, or just to enquire?",
     closingMessage:
@@ -260,7 +252,6 @@ export const WORKFLOW_TEMPLATES: WorkflowTemplate[] = [
     name: "Missed call - Property lead",
     description:
       "Qualifies a lead over a missed call: buying, renting, selling, or scheduling a site visit.",
-    language: "english",
     greeting:
       "Hi, thanks for calling! This is the property assistant. Are you looking to buy, rent, sell, or schedule a site visit?",
     closingMessage:
@@ -329,7 +320,6 @@ export const WORKFLOW_TEMPLATES: WorkflowTemplate[] = [
     name: "Missed call - Service request",
     description:
       "Collects repair/service details over a missed call and flags urgent requests for priority follow-up.",
-    language: "english",
     greeting:
       "Hi, thanks for calling! This is the repair service assistant. Please tell me what service you need, and I'll take down the details.",
     closingMessage:
@@ -385,7 +375,6 @@ export const WORKFLOW_TEMPLATES: WorkflowTemplate[] = [
     conditions: [{ ...condition("urgency", "eq", "Very urgent") }],
   },
 ];
-
 export function getTemplate(id: string) {
   return WORKFLOW_TEMPLATES.find((t) => t.id === id);
 }

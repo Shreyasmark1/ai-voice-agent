@@ -12,6 +12,8 @@ import {
   workflows,
 } from "@/db/schema";
 import { auth } from "@/auth";
+import { DEFAULT_LANGUAGE, DEFAULT_VOICE } from "@/lib/constants";
+import { localizeGreetingAndClosing } from "@/lib/agent/localize";
 import {
   extractConversationMeta,
   insertConversationRecord,
@@ -103,6 +105,8 @@ type StartConversationInput = {
   workflowId: string;
   callerName?: string | null;
   callerPhone?: string | null;
+  language?: string;
+  voice?: string;
 };
 
 export async function startConversationAction(input: StartConversationInput) {
@@ -123,6 +127,15 @@ export async function startConversationAction(input: StartConversationInput) {
     throw new Error("Workflow not found");
   }
 
+  const language = input.language || DEFAULT_LANGUAGE;
+  const voice = input.voice || DEFAULT_VOICE;
+
+  const localized = await localizeGreetingAndClosing({
+    greeting: found.workflow.greeting,
+    closingMessage: found.workflow.closingMessage,
+    language,
+  });
+
   const conversationId = crypto.randomUUID();
 
   await db.insert(conversations).values({
@@ -131,11 +144,13 @@ export async function startConversationAction(input: StartConversationInput) {
     workflowId: input.workflowId,
     callerName: input.callerName?.trim() || null,
     callerPhone: input.callerPhone?.trim() || null,
+    language,
+    voice,
     status: "in_progress",
     transcript: [],
   });
 
-  return { conversationId };
+  return { conversationId, ...localized };
 }
 
 type FinalizeAgentInput = {

@@ -24,9 +24,23 @@ from .models import build_llm, build_stt, build_tts
 
 logger = logging.getLogger(__name__)
 
+_LANGS: dict[str, Language] = {
+    "en-IN": Language.EN_IN,
+    "hi-IN": Language.HI_IN,
+    "ta-IN": Language.TA_IN,
+    "te-IN": Language.TE_IN,
+    "kn-IN": Language.KN_IN,
+    "ml-IN": Language.ML_IN,
+    "mr-IN": Language.MR_IN,
+    "gu-IN": Language.GU_IN,
+    "bn-IN": Language.BN_IN,
+    "pa-IN": Language.PA_IN,
+    "od-IN": Language.OR_IN,
+}
+
 def _language(language_code: str) -> Language:
-    code = (language_code or "en-IN").lower()
-    return Language.HI_IN if code.startswith("hi") else Language.EN_IN
+    code = (language_code or "en-IN").strip().lower()
+    return _LANGS.get(code, Language.EN_IN)
 
 async def run_call(
     websocket: WebSocket,
@@ -35,6 +49,7 @@ async def run_call(
     language_code: str,
     greeting: str,
     token: str,
+    voice: str = "shubh",
     available_tools: list[str] | None = None,
 ) -> None:
     lang = _language(language_code)
@@ -49,7 +64,7 @@ async def run_call(
     )
 
     stt = build_stt(language=lang)
-    tts = build_tts(language=lang)
+    tts = build_tts(language=lang, voice=voice)
     llm = build_llm(system_instruction=system_prompt)
 
     context = LLMContext(

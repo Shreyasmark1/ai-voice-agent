@@ -16,10 +16,6 @@ const businessSchema = z.object({
   description: z.string().max(2000).nullable().optional(),
   phone: z.string().max(30).nullable().optional(),
   timezone: z.string().min(1, "Timezone is required").default("Asia/Kolkata"),
-  languages: z
-    .array(z.string())
-    .min(1, "Select at least one language")
-    .default(["english"]),
 });
 
 export type BusinessState = {
@@ -28,15 +24,12 @@ export type BusinessState = {
 };
 
 function getFieldMap(formData: FormData) {
-  const languagesRaw = formData.getAll("languages");
   return {
     name: formData.get("name"),
     industry: formData.get("industry"),
     description: formData.get("description") || null,
     phone: formData.get("phone") || null,
     timezone: formData.get("timezone") || "Asia/Kolkata",
-    languages:
-      languagesRaw.length > 0 ? languagesRaw.map(String) : ["english"],
   };
 }
 
@@ -73,7 +66,6 @@ export async function createBusinessAction(
     description: parsed.data.description ?? null,
     phone: parsed.data.phone ?? null,
     timezone: parsed.data.timezone,
-    languages: parsed.data.languages,
   });
 
   revalidatePath("/app/businesses");
@@ -118,7 +110,6 @@ export async function updateBusinessAction(
       description: parsed.data.description ?? null,
       phone: parsed.data.phone ?? null,
       timezone: parsed.data.timezone,
-      languages: parsed.data.languages,
       updatedAt: new Date(),
     })
     .where(eq(businesses.id, businessId));

@@ -10,7 +10,6 @@ import {
   CONDITION_OPERATORS,
   FIELD_TYPES,
   URGENCY_LEVELS,
-  WORKFLOW_LANGUAGES,
 } from "@/lib/constants";
 import type { WorkflowCondition, WorkflowFieldType } from "@/db/schema";
 import { Button } from "@/components/ui/button";
@@ -37,7 +36,6 @@ type WorkflowData = {
   name: string;
   description: string | null;
   trigger?: string;
-  language: string;
   greeting: string;
   closingMessage: string;
   active: boolean;
@@ -237,30 +235,14 @@ export function WorkflowBuilder({
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="language">Conversation language</Label>
-            <select
-              id="language"
-              name="language"
-              defaultValue={workflow?.language ?? "english"}
-              className="h-10 w-full rounded-xl border border-input bg-input/30 px-3 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring/50"
-            >
-              {WORKFLOW_LANGUAGES.map((l) => (
-                <option key={l.value} value={l.value}>
-                  {l.label}
-                </option>
-              ))}
-            </select>
+            <Label htmlFor="description">Description</Label>
+            <Textarea
+              id="description"
+              name="description"
+              placeholder="What should this workflow handle?"
+              defaultValue={workflow?.description ?? ""}
+            />
           </div>
-        </div>
-
-        <div className="space-y-2">
-          <Label htmlFor="description">Description</Label>
-          <Textarea
-            id="description"
-            name="description"
-            placeholder="What should this workflow handle?"
-            defaultValue={workflow?.description ?? ""}
-          />
         </div>
 
         <div className="space-y-2">
