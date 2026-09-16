@@ -13,5 +13,6 @@ export function getModel() {
     name: "agent",
     apiKey,
     baseURL: endpoint,
+    supportsStructuredOutputs:false
   }).chatModel(modelId);
 }
