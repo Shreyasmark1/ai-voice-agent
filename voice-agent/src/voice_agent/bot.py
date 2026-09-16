@@ -123,7 +123,7 @@ async def run_call(
     @transport.event_handler("on_client_connected")
     async def on_client_connected(_transport, _client):
         logger.info("Call connected, starting conversation")
-        context.add_message({"role": "assistant", "content": greeting})
+        context.add_message({"role": "user", "content": "Hello"})
         await worker.queue_frames([LLMRunFrame()])
 
     @transport.event_handler("on_client_disconnected")

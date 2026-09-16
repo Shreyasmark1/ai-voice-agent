@@ -61,7 +61,7 @@ export async function POST(req: Request) {
       workflow: found.workflow,
       fields,
     },
-    { language, closingMessageOverride: localized.closingMessage }
+    { language, closingMessageOverride: localized.closingMessage, greeting: localized.greeting }
   );
 
   const calendar = await getCalendarServiceForUser(session.user.id);

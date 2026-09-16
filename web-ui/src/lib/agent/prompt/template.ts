@@ -1,4 +1,4 @@
-export const SYSTEM_PROMPT = `{{businessIntro}}
+export const SYSTEM_PROMPT = `{{greetingInstruction}}{{businessIntro}}
 
 {{languageInstruction}}
 

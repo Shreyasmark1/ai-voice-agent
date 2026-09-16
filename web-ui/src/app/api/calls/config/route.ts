@@ -61,7 +61,7 @@ export async function GET(req: Request) {
       workflow,
       fields,
     },
-    { language, closingMessageOverride: localized.closingMessage }
+    { language, closingMessageOverride: localized.closingMessage, greeting: localized.greeting }
   );
 
   const availableTools: string[] = [];
